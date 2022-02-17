@@ -19,6 +19,14 @@ func isFileExist(destinationPath: String) -> Bool {
     return FileManager.default.fileExists(atPath: destinationPath)
 }
 
+func isReachable(url:String,completion: @escaping (Bool) -> ()) {
+    var request = URLRequest(url: URL(string: url)!)
+        request.httpMethod = "HEAD"
+        URLSession.shared.dataTask(with: request) { _, response, _ in
+            completion((response as? HTTPURLResponse)?.statusCode == 200)
+        }.resume()
+    }
+
 
 func clearCachesDirectory(){
     let fileManager = FileManager.default

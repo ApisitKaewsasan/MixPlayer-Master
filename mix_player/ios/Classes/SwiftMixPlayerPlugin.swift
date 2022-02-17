@@ -8,39 +8,41 @@ import AudioStreaming
 import SwiftTryCatch
 
 let CHANNEL_NAME = "mix_audio_player.methods"
+let EVENT_CHANNEL = "mix_audio_player"
 
 public class SwiftMixPlayerPlugin: NSObject, FlutterPlugin {
 
     var _players = [String:AudioPlayerService]()
     var _registrar : FlutterPluginRegistrar
     var _channel: FlutterMethodChannel
-    var _event: BetterEventChannel
-  
-    var lastPlayerId: String? = nil
-    var isDealloc = false
-    
-    
-     let playera = AudioPlayer()
+    var _event: [String:BetterEventChannel] = [:]
+
+    // let playera = AudioPlayer()
     
     
   public static func register(with registrar: FlutterPluginRegistrar) {
       let channel = FlutterMethodChannel(name: CHANNEL_NAME, binaryMessenger: registrar.messenger())
       let instance = SwiftMixPlayerPlugin(registrar: registrar, channel: channel)
       registrar.addMethodCallDelegate(instance, channel: channel)
+      
   }
     
     init(registrar: FlutterPluginRegistrar, channel: FlutterMethodChannel) {
         _registrar = registrar
         _channel = channel
-        _event = BetterEventChannel(name: "mix_audio_player.playbackEventMessageStream", message: registrar.messenger())
-  
         super.init()
-        
-        
-
+    }
+    
+    func setupEvent(playerId:String){
+        _event["\(EVENT_CHANNEL).procuessRenderToBuffer"] = BetterEventChannel(name: "\(EVENT_CHANNEL).procuessRenderToBuffer", message: _registrar.messenger())
+        _event["\(EVENT_CHANNEL).downLoadTaskStream"] = BetterEventChannel(name: "\(EVENT_CHANNEL).downLoadTaskStream", message: _registrar.messenger())
+        _event["\(EVENT_CHANNEL).playbackEventMessageStream.\(playerId)"] = BetterEventChannel(name: "\(EVENT_CHANNEL).playbackEventMessageStream.\(playerId)", message: _registrar.messenger())
+        _event["\(EVENT_CHANNEL).playerStateChangedStream.\(playerId)"] = BetterEventChannel(name: "\(EVENT_CHANNEL).playerStateChangedStream.\(playerId)", message: _registrar.messenger())
     }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+      
+
       guard let request = call.arguments as? [String:Any] else{
           result(FlutterError(code: "error", message: "ailed to parse call.arguments from Flutter.", details: nil))
          
@@ -55,20 +57,14 @@ public class SwiftMixPlayerPlugin: NSObject, FlutterPlugin {
       var player = self.getOrCreatePlayer(playerId: playerId)
       
        if("init" == call.method){
-           let backgroundQueue = DispatchQueue(label: "com.app.queue", qos: .background)
-           backgroundQueue.async {
-          
+           setupEvent(playerId: playerId)
+           DispatchQueue(label: "sync").sync {
                player.initData(audioItem: AudioItem(playerId: request["playerId"] as! String, title: request["title"] as! String, albumTitle: request["albumTitle"] as! String, artist: request["artist"] as! String, albumimageUrl: request["albumimageUrl"] as! String, skipInterval: request["skipInterval"] as! Double, url: request["url"] as! String, volume: request["volume"] as! Double,enable_equalizer: request["enable_equalizer"] as! Bool,frequecy: request["frequecy"] as! [Int],isLocalFile: request["isLocalFile"] as! Bool))
                
            }
-           
-         
-          
-
            result(0)
       }else if("play" == call.method){
-        
-          player.toggle()
+          player.toggle(at: request["time"] as! Double)
       }else if("pause" == call.method){
           player.pause()
       }else if("stop" == call.method){
@@ -99,6 +95,12 @@ public class SwiftMixPlayerPlugin: NSObject, FlutterPlugin {
           disposePlayer()
       }else if("downloadTask" == call.method){
           DownaloadServices(result: self, requestUrl: request["request"] as! [String])
+      }else if("cancelDownloadTask" == call.method){
+          let download = DownaloadServices(result: self, requestUrl: request["request"] as! [String])
+          for var i in 0..<(request["request"] as! [String]).count {
+              download.cancelTask(with: (request["request"] as! [String])[i], downloadState: .cancel)
+          }
+          print("cancelDownloadTask \(request["request"] as! [String])");
       }else if("audioExport" == call.method){
         // clearCachesDirectory()
           var engine = AudioEngineExport(url: request["request"] as! [String],reverbConfig: Float(request["reverbConfig"] as! Double),speedConfig: Float(request["speedConfig"] as! Double),panConfig: Float(request["panConfig"] as! Double),pitchConfig: Float(request["pitchConfig"] as! Double), frequencyConfig: request["frequencyConfig"] as! [Int],gainConfig: request["gainConfig"] as! [Int],panPlayerConfig: request["panPlayerConfig"] as! [Float])
@@ -106,7 +108,7 @@ public class SwiftMixPlayerPlugin: NSObject, FlutterPlugin {
           guard let sourceUrl = engine.exportAudio(extensionFile: request["extension"] as! String) as? String else {
               return
           }
-         // playera.play(url: URL(fileURLWithPath:sourceUrl))
+        //playera.play(url: URL(fileURLWithPath:sourceUrl))
         result(sourceUrl)
       }else if("wetDryMix" == call.method){
           player.wetDryMix(mix: Float(request["mix"] as! Double))
@@ -138,13 +140,14 @@ public class SwiftMixPlayerPlugin: NSObject, FlutterPlugin {
             element.stop()
             element.notificationsHandler?.clearNotification()
         }
-         _players.removeAll()
+        // _players.removeAll()
     }
     
     // Start EventChannel Stream
     
+   
     func playbackEventMessageStream(playerId: String, currentTime: Double, duration:Double) {
-        _event.sendEvent(arguments: ["playerId": playerId, "currentTime": currentTime,"duration":duration])
+       _event["\(EVENT_CHANNEL).playbackEventMessageStream.\(playerId)"]?.sendEvent(arguments: ["playerId": playerId, "currentTime": currentTime,"duration":duration])
     }
     
     func onError(playerId: String,message:String) {
@@ -152,16 +155,21 @@ public class SwiftMixPlayerPlugin: NSObject, FlutterPlugin {
     }
     
     func onDownLoadTaskStream(download:DownloadStatus) {
-        _channel.invokeMethod("onDownLoadTaskStream", arguments: ["taskJson":download.convertObjectToJson()])
-      
+       // _channel.invokeMethod("onDownLoadTaskStream", arguments: ["taskJson":download.convertObjectToJson()])
+        _event["\(EVENT_CHANNEL).downLoadTaskStream"]?.sendEvent(arguments: download.convertObjectToJson())
     }
     
-    func onPlayerStateChanged(playerId: String, state: AudioPlayerState) {
-        _channel.invokeMethod("onPlayerStateChanged", arguments: ["eventJson":"dvfdsfvd"])       
+    func onPlayerStateChanged(playerId: String, state: AudioPlayerStates) {
+       // _channel.invokeMethod("onPlayerStateChanged", arguments: ["playerState":"\(state)"])
+        _event["\(EVENT_CHANNEL).playerStateChangedStream.\(playerId)"]?.sendEvent(arguments: "\(state)")
+     
     }
 
     func onProcuessRenderToBuffer(procuess: Double) {
-        _channel.invokeMethod("onProcuessRenderToBuffer", arguments: ["procuess": procuess])
+      //  _channel.invokeMethod("onProcuessRenderToBuffer", arguments: ["procuess": procuess])
+      
+        _event["\(EVENT_CHANNEL).procuessRenderToBuffer"]?.sendEvent(arguments: procuess)
+        
     }
     
     // EventChannel Stream End

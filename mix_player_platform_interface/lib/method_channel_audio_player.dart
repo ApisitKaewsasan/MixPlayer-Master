@@ -72,22 +72,13 @@ class MethodChannelAudioPlayer extends MixAudioPlayerPlatform {
 
    Future<void> platformCallHandler(MethodCall call) async {
     final callArgs = call.arguments as Map<dynamic, dynamic>;
+
     switch (call.method) {
       case 'onError':
         _onErrorSubject.add(callArgs['message'] as String);
         break;
-      case 'onPlayerStateChanged':
-        _onPlayerStateChangedSubject.add(callArgs['PlayerState'] as String);
-        break;
-      case 'onProcuessRenderToBuffer':
-
-        _onProcuessRenderToBufferSubject.add(callArgs['procuess'] as double);
-
-        break;
       case 'onDownLoadTaskStream':
-
          _onDownLoadTaskSubject.add(callArgs['taskJson'] as String);
-
         break;
     }
   }
@@ -95,8 +86,8 @@ class MethodChannelAudioPlayer extends MixAudioPlayerPlatform {
 
 
   @override
-  Future<void> play() async {
-    return  _channel.invokeMethod('play',_invokeMethod(<dynamic, dynamic>{}));
+  Future<void> play(double at) async {
+    return  _channel.invokeMethod('play',_invokeMethod(<dynamic, dynamic>{'time':at}));
   }
 
   Future<void> setPlaybackRate(double rate) {
@@ -185,6 +176,12 @@ class MethodChannelAudioPlayer extends MixAudioPlayerPlatform {
     return path;
   }
 
+  Future<void> cancelDownloadTask(List<String> request) {
+    return _channel.invokeMethod('cancelDownloadTask', _invokeMethod(<String, dynamic>{
+      'request': request.toList(),
+     }));
+    }
+
   @override
   Future<void> downloadTask(List<String> request) async{
      return _channel.invokeMethod('downloadTask', _invokeMethod(<String, dynamic>{
@@ -193,22 +190,35 @@ class MethodChannelAudioPlayer extends MixAudioPlayerPlatform {
   }
 
   /// Stream of changes on player state.
- @override
-  Stream<double> get onProcuessRenderToBufferStream => _onProcuessRenderToBufferSubject.stream;
 
   @override
-  Stream<String> get onDownLoadTaskStream => _onDownLoadTaskSubject.stream;
+  Stream<String> get onDownLoadTaskStream =>
+      EventChannel('mix_audio_player.downLoadTaskStream')
+          .receiveBroadcastStream()
+          .cast<String>()
+          .map((map) => map);
 
   @override
-  Stream<String> get onPlayerStateChangedStream => _onPlayerStateChangedSubject.stream;
+  Stream<double> get onProcuessRenderToBufferStream  =>
+    EventChannel('mix_audio_player.procuessRenderToBuffer')
+        .receiveBroadcastStream()
+        .cast<double>()
+        .map((map) => map);
 
   @override
   Stream<String> get onErrorPlayerStream => _onErrorSubject.stream;
 
+  @override
+  Stream<String> get onPlayerStateChangedStream =>
+      EventChannel('mix_audio_player.playerStateChangedStream.${id}')
+      .receiveBroadcastStream()
+      .cast<String>()
+      .map((map) => map);
+
 
   @override
   Stream<PlaybackEventMessage> get playbackEventMessageStream => //_playbackEventMessageSubject.stream;
-      EventChannel('mix_audio_player.playbackEventMessageStream')
+      EventChannel('mix_audio_player.playbackEventMessageStream.${id}')
           .receiveBroadcastStream()
           .cast<Map<dynamic, dynamic>>()
           .map((map) => PlaybackEventMessage.fromJson(map));

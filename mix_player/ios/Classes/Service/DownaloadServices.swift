@@ -21,7 +21,7 @@ class DownaloadServices:NSObject {
     
         lazy var downloadsSession: URLSession = {
           let configuration = URLSessionConfiguration.background(withIdentifier:
-            "com.raywenderlich.HalfTunes.bgSession")
+            "mix_player")
           return URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
         }()
     
@@ -31,13 +31,14 @@ class DownaloadServices:NSObject {
         self.requestUrl = requestUrl
         super.init()
         
-        
+        currentRequestLoop = 0
         reference.onDownLoadTaskStream(download: DownloadStatus(
           requestUrl: requestUrl, download: [], progress: 0.0, requestLoop: 0, isFinish: false
         ))
         DispatchQueue(label: "sync").sync {
             for var i in 0..<requestUrl.count {
                 let theURL = URL(string: requestUrl[i])!.lastPathComponent
+                
                 clearCachesAudio(fileName:theURL)
             }
         }
@@ -51,7 +52,7 @@ class DownaloadServices:NSObject {
     }
     
    func initItem(){
-      
+      print("initItem")
         urlSession = downloadsSession
       
       
@@ -90,7 +91,21 @@ class DownaloadServices:NSObject {
 //
 //                             }
 //                         }
-                         start(with: self.requestUrl[i], downloadState: DownloadState.start)
+                         
+                         isReachable(url: self.requestUrl[i]) { [self] Bool in
+                                                             if(Bool){
+                                                                 start(with: self.requestUrl[i], downloadState: DownloadState.start)
+                                                              //   print("this song is not in your local directory. need to download")
+                                                             }else{
+                                                                 let download = activeDownloads[URL(string:  self.requestUrl[i])!]
+                                                                 download?.downloadState = .error
+                                                                 download?.progress = 1.0
+                                                                 currentRequestLoopUpdate()
+                                                                 updatedownloadStatusItem()
+                                                              //   print("this song can play")
+                                                             }
+                                                         }
+                        
                         
                      }
     }
@@ -147,13 +162,7 @@ class DownaloadServices:NSObject {
         }
     }
     
-    func isReachable(url:String,completion: @escaping (Bool) -> ()) {
-        var request = URLRequest(url: URL(string: url)!)
-            request.httpMethod = "HEAD"
-            URLSession.shared.dataTask(with: request) { _, response, _ in
-                completion((response as? HTTPURLResponse)?.statusCode == 200)
-            }.resume()
-        }
+  
 
 
     func start(with url: String, downloadState: DownloadState) {
@@ -241,17 +250,18 @@ extension DownaloadServices: URLSessionDownloadDelegate {
          
             
      }
-        
+        var tmepProgress = ((progress*100) / Double(self.requestUrl.count))
         print("request \(currentRequestLoop)/\(self.requestUrl.count) status  \((progress / Double(self.requestUrl.count))*100)")
 
         if(currentRequestLoop == self.requestUrl.count){
             //load()
-           
-            reference.onDownLoadTaskStream(download: DownloadStatus(requestUrl: requestUrl, download: statusDownload, progress:(progress / Double(self.requestUrl.count)), requestLoop: currentRequestLoop,isFinish: true))
+            urlSession.invalidateAndCancel()
+         
+            reference.onDownLoadTaskStream(download: DownloadStatus(requestUrl: requestUrl, download: statusDownload, progress:(progress / Double(self.requestUrl.count)), requestLoop:  Int(tmepProgress)/20,isFinish: true))
             
             currentRequestLoop = 0
         }else{
-            reference.onDownLoadTaskStream(download: DownloadStatus(requestUrl: requestUrl, download: statusDownload, progress: (progress / Double(self.requestUrl.count)), requestLoop: currentRequestLoop,isFinish: false))
+            reference.onDownLoadTaskStream(download: DownloadStatus(requestUrl: requestUrl, download: statusDownload, progress: (progress / Double(self.requestUrl.count)), requestLoop: Int(tmepProgress)/20,isFinish: false))
         }
        
        

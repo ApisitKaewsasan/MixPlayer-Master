@@ -17,7 +17,7 @@ class AudioPlayerService:NSObject{
     private var audioSystemResetObserver: Any?
     private var displayLink: CADisplayLink?
     var engines = AVAudioEngine()
-    var audioPlayer = [AVAudioPlayerNode]()
+    var audioPlayer = AVAudioPlayerNode()
     var notificationsHandler: NotificationsHandler? = nil
     
     var playerId: String
@@ -30,7 +30,7 @@ class AudioPlayerService:NSObject{
     
     var player = AudioPlayer()
     var equaliserService: EqualizerService? = nil
-
+    var duration:CMTime?
     
 
   
@@ -54,16 +54,9 @@ class AudioPlayerService:NSObject{
         player.volume = Float((0.01*self.audioItem!.volume!))
 
         
-        
+       // player.attach(node: audioPlayer)
       
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { // Change `2.0` to the desired number of seconds.
-            let audioAsset = AVURLAsset.init(url: URL(string: audioItem.url!)!, options: nil)
-                let duration = audioAsset.duration
-            self.reference.playbackEventMessageStream(playerId: self.playerId, currentTime: 0.0, duration: CMTimeGetSeconds(duration))
-           
-        }
-     
     }
     
     
@@ -84,114 +77,149 @@ class AudioPlayerService:NSObject{
   
 
     func toggleMute() {
-        if(player.muted){
-            player.muted = false
-        }else{
-            player.muted = true
+        if(player.state != .error){
+            if(player.muted){
+                player.muted = false
+            }else{
+                player.muted = true
+            }
         }
     }
 
     func update(rate: Float) {
-        player.rate = rate
+        if(player.state != .error){
+            player.rate = rate
+        }
     }
     
-    func resume() {
+    func resume(at:Double) {
         if(player.state != .error){
+            player.seek(to: at)
             player.resume()
+
         }
     }
     
     func reload(){
-        DispatchQueue(label: "sync").sync {
-            play()
-        }
-        DispatchQueue(label: "sync").sync {
-            pause()
-        }
-       
+        player.seek(to: 0.0)
     }
     
   
-    func play(){
-        if(audioItem!.isLocalFile){
-            guard let destinationURL = localFilePath(for: URL(string: audioItem!.url!)!) else { return }
-            player.play(url: destinationURL)
-        }else{
-            player.play(url: URL(string: audioItem!.url!)!)
-        }
-    }
-
-    func toggle() {
-   
+    func play(at:Double){
         if(player.state != .error){
-            if(player.state == .playing){
-                pause()
-            }else if(player.state == .paused){
-                resume()
+            if(audioItem!.isLocalFile){
+                guard let destinationURL = localFilePath(for: URL(string: audioItem!.url!)!) else { return }
+                player.seek(to: at)
+                player.play(url: destinationURL)
+                
             }else{
-                play()
+                player.seek(to: at)
+                player.play(url: URL(string: audioItem!.url!)!)
+                
             }
         }
-      
+//        guard let destinationURL = localFilePath(for: URL(string: audioItem!.url!)!) else { return }
+//        var metronome = EngMetronome(url: destinationURL)
+//        metronome.play(bpm: 360)
+    }
+
+    func toggle(at:Double) {
+            if(player.state != .error){
+                if(player.state == .playing){
+                    pause()
+                }else if(player.state == .paused){
+                    resume(at: at)
+                }else{
+                    play(at: at)
+                }
+            }
+        
     }
     
     func wetDryMix(mix:Float){
-        reverb.wetDryMix = mix
+        if(player.state != .error){
+            reverb.wetDryMix = mix
+        }
     }
     
     func skipForward(time:Float){
-        let increase = self.player.progress + Double(time)
-        if increase < self.player.duration{
-            seek(at: Double(increase))
+        if(player.state != .error && player.state != .bufferring){
+            let increase = self.player.progress + Double(time)
+            if increase < self.player.duration{
+                seek(at: Double(increase))
+            }
         }
         
     }
     
     func skipBackward(time:Float){
-        let increase = self.player.progress - Double(time)
-        seek(at: Double(increase))
+        if(player.state != .error && player.state != .bufferring){
+            let increase = self.player.progress - Double(time)
+            if increase < 0{
+               
+                seek(at: 0)
+            }else{
+               
+                seek(at: Double(increase))
+            }
+        }
     }
     
     func updateVolume(volume:Float){
-        player.volume = (0.01 * volume)
+        if(player.state != .error){
+            player.volume = (0.01 * volume)
+        }
     }
 
     func seek(at time: Double) {
-        player.seek(to: time)
+        if(player.state != .error){
+            player.seek(to: time)
+            self.reference.playbackEventMessageStream(playerId: self.playerId, currentTime: time, duration:182)
+        }
     }
 
     
     func setPan(pan:Float){
-        unitSampler.pan = pan
+        if(player.state != .error){
+            unitSampler.pan = pan / 100
+        }
     }
     
     func setPitch(pitch:Float){
-        pitchControl.pitch = pitch * 100
+        if(player.state != .error){
+            pitchControl.pitch = pitch * 100
+        }
     }
     
     func addNode(_ node: AVAudioNode) {
-        player.attach(node: node)
+        if(player.state != .error){
+            player.attach(node: node)
+        }
     }
 
     func removeNode(_ node: AVAudioNode) {
-       player.detach(node: node)
+        if(player.state != .error){
+            player.detach(node: node)
+        }
     }
     
- 
-    
-    
+
     func setPlaybackRate(playbackRate: Float) {
-        speedControl.rate = playbackRate
+        if(player.state != .error){
+            speedControl.rate = playbackRate
+        }
     }
     
    
     
     private func startDisplayLink() {
-        displayLink?.invalidate()
-        displayLink = nil
-        displayLink = UIScreen.main.displayLink(withTarget: self, selector: #selector(tick))
-        displayLink?.preferredFramesPerSecond = 6
-        displayLink?.add(to: .current, forMode: .common)
+        if(player.state != .error){
+            displayLink?.invalidate()
+            displayLink = nil
+            displayLink = UIScreen.main.displayLink(withTarget: self, selector: #selector(tick))
+            displayLink?.preferredFramesPerSecond = 6
+            displayLink?.add(to: .current, forMode: .common)
+        }
     }
     
     private func stopDisplayLink() {
@@ -285,7 +313,24 @@ extension AudioPlayerService : AudioPlayerDelegate{
             notificationsHandler?.UpdateCenterInfo(playbackRate: 0)
             stopDisplayLink()
         }
-        reference.onPlayerStateChanged(playerId: playerId, state: newState)
+       
+            if(newState == .ready){
+                reference.onPlayerStateChanged(playerId: playerId, state: .ready)
+            }else if(newState == .error){
+                reference.onPlayerStateChanged(playerId: playerId, state: .error)
+            }else if(newState == .bufferring){
+                reference.onPlayerStateChanged(playerId: playerId, state: .bufferring)
+            }else if(newState == .disposed){
+                reference.onPlayerStateChanged(playerId: playerId, state: .disposed)
+            }else if(newState == .paused){
+                reference.onPlayerStateChanged(playerId: playerId, state: .paused)
+            }else if(newState == .playing){
+                reference.onPlayerStateChanged(playerId: playerId, state: .playing)
+            }else if(newState == .running){
+                reference.onPlayerStateChanged(playerId: playerId, state: .running)
+            }
+        
+        
     }
 
     func audioPlayerDidFinishPlaying(player _: AudioPlayer,
@@ -296,6 +341,7 @@ extension AudioPlayerService : AudioPlayerDelegate{
     {
         print("audioPlayerDidFinishPlaying")
         reload()
+        reference.onPlayerStateChanged(playerId: playerId, state: .complete)
       
 
     }

@@ -48,7 +48,7 @@ abstract class MixAudioPlayerPlatform {
 
 
   /// Plays the current audio source at the current index and position.
-  Future<void> play() {
+  Future<void> play(double at) {
     throw UnimplementedError("play() has not been implemented.");
   }
 
@@ -119,6 +119,9 @@ abstract class MixAudioPlayerPlatform {
     throw UnimplementedError("equaliserReset() has not been implemented.");
   }
 
+  Future<void> cancelDownloadTask(List<String> request) {
+    throw UnimplementedError("cancelDownloadTask() has not been implemented.");
+  }
 
   Future<void> downloadTask(List<String> request) {
     throw UnimplementedError("downloadTask() has not been implemented.");
@@ -159,6 +162,9 @@ abstract class MixAudioPlayerPlatform {
 
 
   /// A broadcast stream of playback events.
+
+
+
   Stream<PlaybackEventMessage> get playbackEventMessageStream {
     throw UnimplementedError(
         'playbackEventMessageStream has not been implemented.');

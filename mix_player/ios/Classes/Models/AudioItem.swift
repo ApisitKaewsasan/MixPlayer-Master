@@ -37,14 +37,3 @@ class AudioItem{
       }
 
 }
-
-enum AudioPlayerStatus {
-   case ready
-   case running
-   case playing
-   case bufferring
-   case paused
-   case stopped
-   case error
-   case disposed
-}

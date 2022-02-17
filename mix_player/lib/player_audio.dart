@@ -27,13 +27,12 @@ class PlayerAudio{
   bool _initialized = false;
   late AudioItem? audioItem;
 
-  static List<double> frequecy = [32, 64, 128, 250, 500, 10000, 20000, 40000, 80000, 160000];
-  List<double> frequecy_value = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   // get
   bool playing = false;
   bool isMuse = true;
   PlayerState playState = PlayerState.none;
+  PlaybackEventMessage playbackEventMessage = PlaybackEventMessage(playerId: _uuid.toString(),duration: 0.0,currentTime: 0.0);
 
   // post
   final _eventSubject = BehaviorSubject<PlaybackEventMessage>();
@@ -44,18 +43,18 @@ class PlayerAudio{
     players[playerId] = this;
   }
 
-  setAudioItem({required AudioItem audioItem}) {
+  setAudioItem({required AudioItem audioItem,required Function onSuccess,}) {
     _initialized = true;
     this.audioItem = audioItem;
     volume = audioItem.volume!;
-    _setPlatform();
+    _setPlatform(onSuccess);
   }
 
   setFrequecy({required List<int> frequecy}){
     frequecy = frequecy;
   }
 
-  _setPlatform() async {
+  _setPlatform(Function onSuccess) async {
 
     _platform = await MixAudioPlatform.instance.init(AudioData(
         playerId: playerId,
@@ -65,14 +64,15 @@ class PlayerAudio{
         albumimageUrl: audioItem!.albumimageUrl,
         artist: audioItem!.artist,
         albumTitle: audioItem!.albumTitle,
-        skipInterval: audioItem!.skipInterval!, frequecy: frequecy, enable_equalizer: audioItem!.enable_equalizer!,isLocalFile: audioItem!.isLocalFile));
+        skipInterval: audioItem!.skipInterval!, frequecy: audioItem!.frequecy!, enable_equalizer: audioItem!.enable_equalizer!,isLocalFile: audioItem!.isLocalFile));
     _subscribeToEvents(_platform);
+    onSuccess();
   }
 
   // get
-  play(){
+  play({double at = 0.0}){
     if (checkInstallPlatform()) {
-      _platform.play();
+      _platform.play(at);
     }
   }
 
@@ -116,7 +116,7 @@ class PlayerAudio{
     }
   }
 
-  setPan(double pan) {
+  setStereoBalance(double pan) {
     if (checkInstallPlatform()) {
       this.pan = pan;
       _platform.setPan(pan);
@@ -125,7 +125,6 @@ class PlayerAudio{
 
   setEqualizer({required int index,required double value}){
     if (checkInstallPlatform()) {
-      this.frequecy_value[index] = value;
       _platform.setEqualizer(index,value);
     }
   }
@@ -152,14 +151,15 @@ class PlayerAudio{
 
   toggleMute() async {
     if (checkInstallPlatform()) {
-      isMuse = (await _platform.toggleMute())!;
+      isMuse = !isMuse;
+       (await _platform.toggleMute())!;
     }
   }
 
-  setPlaybackRate(double rate){
+  setSpeed(double speed){
     if (checkInstallPlatform()) {
-      this.speed = rate;
-      _platform.setPlaybackRate(rate);
+      this.speed = speed;
+      _platform.setPlaybackRate(speed);
     }
   }
 
@@ -167,7 +167,7 @@ class PlayerAudio{
     if (checkInstallPlatform()) {
       setPitch(0.0);
       // equaliserReset();
-      setPan(0.0);
+      setStereoBalance(0.0);
       updateVolume(100);
     }
   }
@@ -185,7 +185,7 @@ class PlayerAudio{
 
   _subscribeToEvents(MixAudioPlayerPlatform platform) {
     platform.playbackEventMessageStream.listen((event) {
-
+      playbackEventMessage = event;
       _eventSubject.add(PlaybackEventMessage(playerId: event.playerId,duration: event.duration,currentTime: event.currentTime));
     });
     platform.onErrorPlayerStream.listen((event) {
@@ -197,6 +197,7 @@ class PlayerAudio{
           ? true
           : false;
       playState = PlayerStateGet.getPlayerState(event);
+
       _playerStateChangedSubject.add(PlayerStateGet.getPlayerState(event));
     });
   }

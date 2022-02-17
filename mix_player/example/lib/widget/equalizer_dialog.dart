@@ -1,28 +1,20 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:mix_player/mix_player.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 
+import '../controller/player_controller.dart';
 import '../models/FrequencyModel.dart';
 
-class Equalizer extends StatefulWidget {
+class Equalizer extends StatelessWidget {
 
-  final Function(FrequencyModel,int) onChanged;
-  final Function()? onReset;
+  final controller = Get.find<PlayerController>();
 
-  const Equalizer({Key? key, required this.onChanged,this.onReset}) : super(key: key);
 
-  @override
-  _EqualizerState createState() => _EqualizerState();
-}
 
-List<FrequencyModel> frequecy_item = List.generate(MixPlayer.frequecy.length, (index) => FrequencyModel(key_frequency: MixPlayer.frequecy[index],controller_value: 0));
-
-final frequency = BehaviorSubject<List<FrequencyModel>>()..add(frequecy_item);
-
-class _EqualizerState extends State<Equalizer> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -37,19 +29,16 @@ class _EqualizerState extends State<Equalizer> {
               children: [
                 Text("Equalizer",style: TextStyle(fontWeight: FontWeight.bold),),
                 TextButton(onPressed: (){
-                  frequecy_item = List.generate(MixPlayer.frequecy.length, (index) => FrequencyModel(key_frequency: MixPlayer.frequecy[index],controller_value: 0));
-                  frequency.add(frequecy_item);
-                  widget.onReset!.call();
+                  controller.frequecy_item.value = MixPlayer.frequecy.map((e) => FrequencyModel(key_frequency: e,controller_value: 0)).toList();
                 }, child: Text("Reset",style: TextStyle(fontWeight: FontWeight.bold),))
               ],
             ),
             Divider(),
-            StreamBuilder<List<FrequencyModel>>(
-              stream: frequency.stream,
-              builder: (context, snapshot) => Center(
+            ObxValue<RxList<FrequencyModel>>((snapshot){
+              return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: snapshot.hasData?snapshot.data!
+                  children: snapshot
                       .asMap()
                       .map((key, values) => MapEntry(
                     key,
@@ -71,10 +60,8 @@ class _EqualizerState extends State<Equalizer> {
                               showDividers: true,
                               stepSize: 1,
                               onChanged: (dynamic value) {
-                                List<FrequencyModel>? temp = snapshot.data;
-                                temp![key] = FrequencyModel(key_frequency: values.key_frequency,controller_value: value);
-                                frequency.add(temp);
-                                widget.onChanged(temp[key],key);
+                                snapshot[key] = FrequencyModel(key_frequency: values.key_frequency,controller_value: value);
+                                controller.player.setEqualizer(index: key, value: value);
                               },
                             ),
                           )
@@ -83,11 +70,11 @@ class _EqualizerState extends State<Equalizer> {
                     ),
                   ))
                       .values
-                      .toList():[],
+                      .toList(),
 
                 ),
-              ),
-            ),
+              );
+            }, controller.frequecy_item),
             Divider(),
           ],
         ),

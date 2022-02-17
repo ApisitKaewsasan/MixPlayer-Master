@@ -5,11 +5,14 @@ enum PlayerState {
  running,
  playing,
  bufferring,
+  complete,
  paused,
  stopped,
  error,
  disposed,
 }
+
+
 
 class PlayerStateGet {
   static PlayerState getPlayerState(String event) {
@@ -21,6 +24,8 @@ class PlayerStateGet {
       return PlayerState.playing;
     } else if (event == 'bufferring') {
       return PlayerState.bufferring;
+    }else if (event == 'complete') {
+      return PlayerState.complete;
     }else if (event == 'paused') {
       return PlayerState.paused;
     }else if (event == 'stopped') {

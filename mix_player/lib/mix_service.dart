@@ -29,6 +29,11 @@ class MixService{
     _platform.downloadTask(request);
   }
 
+  cancelDownloadTask({required List<String> request}){
+  _platform.cancelDownloadTask(request);
+  }
+
+
   audioExport({required List<String> request,required FileExtension extension,required double reverbConfig,required double speedConfig,required double panConfig,required double pitchConfig,
     required List<double> frequencyConfig,required List<double> gainConfig,required List<double> panPlayerConfig})=>
       _platform.audioExport(request,EnumToString.convertToString(extension).toLowerCase(),reverbConfig,speedConfig,panConfig,pitchConfig,frequencyConfig,gainConfig,panPlayerConfig);

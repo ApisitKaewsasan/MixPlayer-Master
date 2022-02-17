@@ -38,17 +38,17 @@ class NotificationsHandler {
           
             remoteCommandCenter?.pauseCommand.isEnabled = true
             remoteCommandCenter?.pauseCommand.addTarget(handler: { MPRemoteCommandEvent in
-                self.reference.toggle()
+                self.reference.toggle(at: self.reference.player.progress)
                 return .success
             })
             remoteCommandCenter?.playCommand.isEnabled = true
             remoteCommandCenter?.playCommand.addTarget(handler: { MPRemoteCommandEvent in
-                self.reference.toggle()
+                self.reference.toggle(at: self.reference.player.progress)
                 return .success
             })
             remoteCommandCenter?.togglePlayPauseCommand.isEnabled = true
             remoteCommandCenter?.togglePlayPauseCommand.addTarget(handler: { MPRemoteCommandEvent in
-                self.reference.toggle()
+                self.reference.toggle(at: self.reference.player.progress)
                 return .success
             })
             remoteCommandCenter?.previousTrackCommand.isEnabled = false
@@ -133,8 +133,8 @@ class NotificationsHandler {
             MPMediaItemPropertyTitle: reference.audioItem?.title,
             MPMediaItemPropertyAlbumTitle: reference.audioItem?.albumTitle,
             MPMediaItemPropertyArtist: reference.audioItem?.artist,
-           // MPMediaItemPropertyPlaybackDuration: reference.player.duration,
-            //MPNowPlayingInfoPropertyElapsedPlaybackTime: reference.progress,
+            MPMediaItemPropertyPlaybackDuration: reference.player.duration,
+            MPNowPlayingInfoPropertyElapsedPlaybackTime: reference.player.progress,
             MPNowPlayingInfoPropertyPlaybackRate: Float(playbackRate)
             
             

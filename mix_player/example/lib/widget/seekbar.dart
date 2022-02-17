@@ -38,6 +38,7 @@ class SeekBar extends StatelessWidget {
       StreamBuilder<Duration>(
           stream: _seekSubject.stream,
           builder: (context, snapshot) {
+
             return snapshot.hasData?Row(
               children: [
                 Text(
@@ -68,6 +69,7 @@ class SeekBar extends StatelessWidget {
                           value: snapshot.data!.inMilliseconds.toDouble(),
                           onChanged: (value) {
                             controller.dragValue = true;
+                            controller.seekBarValue = value;
                             _seekSubject.add(Duration(milliseconds: value.round()));
 
                           },

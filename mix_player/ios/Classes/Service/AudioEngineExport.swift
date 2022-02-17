@@ -59,7 +59,10 @@ class AudioEngineExport{
         configEngineAudio()
     }
     
+    
+    
     func configEngineAudio(){
+        clearCachesAudio(fileName: "mix_export_audio")
         do{
             for var i in 0..<self.url!.count {
                 // append new AVAudio
@@ -99,19 +102,23 @@ class AudioEngineExport{
         
         
         
-            // config effect
-//            for i in 0..<gainConfig.count {
-//                  eqUnit.bands[i].bypass = false
-//                  eqUnit.bands[i].filterType = .parametric
-//                  eqUnit.bands[i].frequency = Float(frequencyConfig[i])
-//                  eqUnit.bands[i].bandwidth = 0.5
-//                  eqUnit.bands[i].gain = Float(gainConfig[i])
-//              }
-//        
-//       
-//            for i in 0..<audioPlayer.count {
-//                self.audioPlayer[i].pan = panPlayerConfig[i]
-//            }
+          //   config effect
+            if(gainConfig.count>0){
+                for i in 0..<gainConfig.count {
+                      eqUnit.bands[i].bypass = false
+                      eqUnit.bands[i].filterType = .parametric
+                      eqUnit.bands[i].frequency = Float(frequencyConfig[i])
+                      eqUnit.bands[i].bandwidth = 0.5
+                      eqUnit.bands[i].gain = Float(gainConfig[i])
+                  }
+            }
+       
+        if(panPlayerConfig.count>0){
+            for i in 0..<panPlayerConfig.count {
+              self.audioPlayer[i].pan = panPlayerConfig[i]
+           }
+        }
+//
       
             self.reverbControl.wetDryMix = self.reverbConfig
             self.speedControl.rate = self.speedConfig
