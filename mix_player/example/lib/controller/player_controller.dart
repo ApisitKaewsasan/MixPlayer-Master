@@ -51,6 +51,7 @@ class PlayerController extends GetxController {
         duration: audioItem.duration,
         onSuccess: () {
           // download song from server
+          player.setModeLoop(false);
           player.setSpeed(speedMetronome.value);
           player.updateVolume(volumeMetronome.value);
           player.setStereoBalance(stereoMetronome.value);

@@ -32,6 +32,7 @@ class AudioPlayerService:NSObject{
     var equaliserService: EqualizerService? = nil
     var duration:CMTime?
     
+    var modeLoop  = false
 
   
     init(reference: SwiftMixPlayerPlugin,playerId : String) {
@@ -56,6 +57,7 @@ class AudioPlayerService:NSObject{
         
        // player.attach(node: audioPlayer)
       
+        notificationsHandler = NotificationsHandler(reference: self)
         
     }
     
@@ -100,8 +102,13 @@ class AudioPlayerService:NSObject{
         }
     }
     
-    func reload(){
+    func setModeLoop(mode:Bool){
+        self.modeLoop = mode
+    }
+    
+    func reloadPlay(){
         player.seek(to: 0.0)
+        toggle(at: 0.0)
     }
     
   
@@ -307,9 +314,11 @@ extension AudioPlayerService : AudioPlayerDelegate{
     func audioPlayerStateChanged(player _: AudioPlayer, with newState: AudioPlayerState, previous _: AudioPlayerState) {
         print("audioPlayerStateChanged \(newState)")
         if(newState == .playing){
+           
             notificationsHandler?.setupNotificationMedia(playbackRate: 1)
             startDisplayLink()
         }else if(newState == .stopped || newState == .bufferring || newState == .paused){
+            
             notificationsHandler?.UpdateCenterInfo(playbackRate: 0)
             stopDisplayLink()
         }
@@ -340,10 +349,12 @@ extension AudioPlayerService : AudioPlayerDelegate{
                                      duration _: Double)
     {
         print("audioPlayerDidFinishPlaying")
-        reload()
+        //reload()
         reference.onPlayerStateChanged(playerId: playerId, state: .complete)
-      
-
+        if(self.modeLoop){
+            play(at: 0.0)
+        }
+        
     }
 
     func audioPlayerUnexpectedError(player _: AudioPlayer, error: AudioPlayerError) {

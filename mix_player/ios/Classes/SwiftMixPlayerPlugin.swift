@@ -64,11 +64,17 @@ public class SwiftMixPlayerPlugin: NSObject, FlutterPlugin {
            }
            result(0)
       }else if("play" == call.method){
-          player.toggle(at: request["time"] as! Double)
+          player.play(at: request["time"] as! Double)
+      }else if("reloadPlay" == call.method){
+          player.reloadPlay()
+      }else if("setModeLoop" == call.method){
+          player.setModeLoop(mode: request["mode"] as! Bool)
       }else if("pause" == call.method){
           player.pause()
       }else if("stop" == call.method){
           player.stop()
+      }else if("resume" == call.method){
+          player.resume(at: request["time"] as! Double)
       }else if("skipForward" == call.method){
           player.skipForward(time: request["time"] as! Float)
       }else if("skipBackward" == call.method){

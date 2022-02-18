@@ -52,6 +52,17 @@ abstract class MixAudioPlayerPlatform {
     throw UnimplementedError("play() has not been implemented.");
   }
 
+  Future<void> reloadPlay() {
+    throw UnimplementedError("reloadPlay() has not been implemented.");
+  }
+
+  Future<void> setModeLoop(bool mode) {
+    throw UnimplementedError("setModeLoop() has not been implemented.");
+  }
+
+  Future<void> resume(double at) {
+    throw UnimplementedError("resume() has not been implemented.");
+  }
 
   Future<void> setPlaybackRate(double rate) {
     throw UnimplementedError("pause() has not been implemented.");

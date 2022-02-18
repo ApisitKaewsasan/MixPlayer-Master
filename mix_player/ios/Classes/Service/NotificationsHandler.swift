@@ -29,6 +29,7 @@ class NotificationsHandler {
    
 //        clearNotification()
 //
+        print("222222")
         UpdateCenterInfo(playbackRate:  playbackRate)
    
         
@@ -122,11 +123,10 @@ class NotificationsHandler {
     }
     
     func UpdateCenterInfo(playbackRate: Double) {
-       
+        print("111111")
         if (infoCenter == nil) {
             return
         }
-   
         //Logger.info("Updating playing \(reference.player.duration)   elapsedTime \(reference.player.progress)")
         
         var playingInfo: [String: Any?] = [
@@ -136,8 +136,6 @@ class NotificationsHandler {
             MPMediaItemPropertyPlaybackDuration: reference.player.duration,
             MPNowPlayingInfoPropertyElapsedPlaybackTime: reference.player.progress,
             MPNowPlayingInfoPropertyPlaybackRate: Float(playbackRate)
-            
-            
         ]
         
         Logger.info("Updating playing info...")

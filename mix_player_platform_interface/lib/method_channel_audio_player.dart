@@ -90,6 +90,18 @@ class MethodChannelAudioPlayer extends MixAudioPlayerPlatform {
     return  _channel.invokeMethod('play',_invokeMethod(<dynamic, dynamic>{'time':at}));
   }
 
+  Future<void> reloadPlay() {
+    return  _channel.invokeMethod('reloadPlay',_invokeMethod(<dynamic, dynamic>{}));
+  }
+
+  Future<void> setModeLoop(bool mode) {
+    return  _channel.invokeMethod('setModeLoop',_invokeMethod(<dynamic, dynamic>{'mode':mode}));
+  }
+
+  Future<void> resume(double at) {
+    return  _channel.invokeMethod('resume',_invokeMethod(<dynamic, dynamic>{'time':at}));
+  }
+
   Future<void> setPlaybackRate(double rate) {
     return  _channel.invokeMethod('setPlaybackRate',_invokeMethod(<dynamic, dynamic>{'rate':rate}));
   }

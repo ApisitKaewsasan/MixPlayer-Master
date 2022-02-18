@@ -62,11 +62,22 @@ class MixPlayer {
 
   togglePlay({double at = 0.0}) {
     for (int i=0;i<player.length;i++) {
-      if (player[i].playing) {
+      if (player[i].playState == PlayerState.playing) {
         player[i].pause();
+        print("pause ${at}");
+      }else if(player[i].playState == PlayerState.paused ){
+        print("resume ${at}");
+        player[i].resume(at: at);
       } else {
-          player[i].play(at: at);
+        player[i].play(at: 0.0);
       }
+    }
+  }
+
+  reloadPlay(){
+    for (int i=0;i<player.length;i++) {
+      player[i].reloadPlay();
+
     }
   }
 
@@ -79,6 +90,14 @@ class MixPlayer {
   setStereoBalance(double pan) {
     for (var item in player) {
       item.setStereoBalance(pan);
+    }
+
+  }
+
+  setModeLoop(bool mode){
+    modeLoop = mode;
+    for (var item in player) {
+      item.setModeLoop(mode);
     }
 
   }
@@ -151,6 +170,7 @@ class MixPlayer {
       if(event == PlayerState.complete){
         playerStateChangedStream.add(PlayerState.ready);
         playbackEventStream.add(PlaybackEventMessage(currentTime: 0,duration: this.duration!));
+
       }else{
         playerStateChangedStream.add(event);
       }

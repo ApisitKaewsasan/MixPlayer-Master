@@ -76,10 +76,21 @@ class PlayerAudio{
     }
   }
 
+  resume({double at = 0.0}){
+    if (checkInstallPlatform()) {
+      _platform.resume(at);
+    }
+  }
   // post
   pause(){
     if (checkInstallPlatform()) {
       _platform.pause();
+    }
+  }
+
+  setModeLoop(bool mode){
+    if (checkInstallPlatform()) {
+      _platform.setModeLoop(mode);
     }
   }
 
@@ -113,6 +124,11 @@ class PlayerAudio{
     if (checkInstallPlatform()) {
       _platform.seek(position);
 
+    }
+  }
+  reloadPlay(){
+    if (checkInstallPlatform()) {
+      _platform.reloadPlay();
     }
   }
 

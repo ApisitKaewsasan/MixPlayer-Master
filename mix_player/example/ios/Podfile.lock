@@ -1,53 +1,37 @@
 PODS:
   - AudioStreaming (0.6.0)
-  - connectivity_plus (0.0.1):
-    - Flutter
-    - ReachabilitySwift
   - Flutter (1.0.0)
   - mix_player (0.0.1):
     - AudioStreaming
     - Flutter
     - SwiftTryCatch
-  - network_info_plus (0.0.1):
-    - Flutter
   - path_provider_ios (0.0.1):
     - Flutter
-  - ReachabilitySwift (5.0.0)
   - SwiftTryCatch (0.0.1)
 
 DEPENDENCIES:
-  - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - Flutter (from `Flutter`)
   - mix_player (from `.symlinks/plugins/mix_player/ios`)
-  - network_info_plus (from `.symlinks/plugins/network_info_plus/ios`)
   - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
 
 SPEC REPOS:
   trunk:
     - AudioStreaming
-    - ReachabilitySwift
     - SwiftTryCatch
 
 EXTERNAL SOURCES:
-  connectivity_plus:
-    :path: ".symlinks/plugins/connectivity_plus/ios"
   Flutter:
     :path: Flutter
   mix_player:
     :path: ".symlinks/plugins/mix_player/ios"
-  network_info_plus:
-    :path: ".symlinks/plugins/network_info_plus/ios"
   path_provider_ios:
     :path: ".symlinks/plugins/path_provider_ios/ios"
 
 SPEC CHECKSUMS:
   AudioStreaming: f3605c8459d56fea615ac8b97084c07137247878
-  connectivity_plus: 413a8857dd5d9f1c399a39130850d02fe0feaf7e
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
   mix_player: ed5f5d3696ad189e9d7de1d71c9cc062775c2764
-  network_info_plus: b78876159360f5580608c2cea620d6ceffabd0ad
   path_provider_ios: 7d7ce634493af4477d156294792024ec3485acd5
-  ReachabilitySwift: 985039c6f7b23a1da463388634119492ff86c825
   SwiftTryCatch: fb6d2b34abe48efd69578dac919293a44f95b481
 
 PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
