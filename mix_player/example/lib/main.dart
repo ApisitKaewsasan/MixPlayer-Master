@@ -12,12 +12,12 @@ import 'controller/player_controller.dart';
 
 void main() {
   runApp(GetMaterialApp(
-    home: Main1(),
+    home: Main(),
   ));
 }
 
 
-class Main1 extends GetView<PlayerController> {
+class Main extends GetView<PlayerController> {
 
   init(){
     Get.put(PlayerController());
@@ -26,7 +26,6 @@ class Main1 extends GetView<PlayerController> {
   @override
   Widget build(BuildContext context) {
     init();
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Mix Player"),
@@ -43,6 +42,14 @@ class Main1 extends GetView<PlayerController> {
         padding: const EdgeInsets.only(top: 10),
         child: Column(
           children: [
+            StreamBuilder<DownLoadTask>(stream:  controller.onDownLoadTaskSubject.stream,builder: (context,shotshot){
+            if(shotshot.hasData){
+              print("downloadDialog  ${shotshot}");
+              return Text("asdsc ${shotshot.data!.progress}");
+            }else{
+              return Text("asdsc 0.0");
+            }
+           }),
             Expanded(
                 child: SingleChildScrollView(
                   child: Column(

@@ -33,11 +33,14 @@ public class SwiftMixPlayerPlugin: NSObject, FlutterPlugin {
         super.init()
     }
     
-    func setupEvent(playerId:String){
-        _event["\(EVENT_CHANNEL).procuessRenderToBuffer"] = BetterEventChannel(name: "\(EVENT_CHANNEL).procuessRenderToBuffer", message: _registrar.messenger())
-        _event["\(EVENT_CHANNEL).downLoadTaskStream"] = BetterEventChannel(name: "\(EVENT_CHANNEL).downLoadTaskStream", message: _registrar.messenger())
+    func setupEventPlayer(playerId:String){
         _event["\(EVENT_CHANNEL).playbackEventMessageStream.\(playerId)"] = BetterEventChannel(name: "\(EVENT_CHANNEL).playbackEventMessageStream.\(playerId)", message: _registrar.messenger())
         _event["\(EVENT_CHANNEL).playerStateChangedStream.\(playerId)"] = BetterEventChannel(name: "\(EVENT_CHANNEL).playerStateChangedStream.\(playerId)", message: _registrar.messenger())
+    }
+    
+    func setupEventServer(){
+        _event["\(EVENT_CHANNEL).procuessRenderToBuffer"] = BetterEventChannel(name: "\(EVENT_CHANNEL).procuessRenderToBuffer", message: _registrar.messenger())
+        _event["\(EVENT_CHANNEL).downLoadTaskStream"] = BetterEventChannel(name: "\(EVENT_CHANNEL).downLoadTaskStream", message: _registrar.messenger())
     }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -57,12 +60,14 @@ public class SwiftMixPlayerPlugin: NSObject, FlutterPlugin {
       var player = self.getOrCreatePlayer(playerId: playerId)
       
        if("init" == call.method){
-           setupEvent(playerId: playerId)
+           setupEventPlayer(playerId: playerId)
            DispatchQueue(label: "sync").sync {
                player.initData(audioItem: AudioItem(playerId: request["playerId"] as! String, title: request["title"] as! String, albumTitle: request["albumTitle"] as! String, artist: request["artist"] as! String, albumimageUrl: request["albumimageUrl"] as! String, skipInterval: request["skipInterval"] as! Double, url: request["url"] as! String, volume: request["volume"] as! Double,enable_equalizer: request["enable_equalizer"] as! Bool,frequecy: request["frequecy"] as! [Int],isLocalFile: request["isLocalFile"] as! Bool))
                
            }
            result(0)
+      }else if("initService" == call.method){
+          setupEventServer()
       }else if("play" == call.method){
           player.play(at: request["time"] as! Double)
       }else if("reloadPlay" == call.method){

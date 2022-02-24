@@ -29,7 +29,7 @@ abstract class MixAudioPlatform extends PlatformInterface {
     throw UnimplementedError('init() has not been implemented.');
   }
 
-  MixAudioPlayerPlatform service() {
+  Future<MixAudioPlayerPlatform> initService(String playerId) {
     throw UnimplementedError('init() has not been implemented.');
   }
 

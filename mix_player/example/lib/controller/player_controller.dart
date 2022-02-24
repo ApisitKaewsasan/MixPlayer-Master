@@ -33,6 +33,10 @@ class PlayerController extends GetxController {
   var playState = PlayerState.none.obs;
   var playbackEvent = PlaybackEventMessage(currentTime: 0, duration: 0).obs;
 
+
+  final onDownLoadTaskSubject =  BehaviorSubject<DownLoadTask>();
+
+
   // metronome ---
   RxDouble speedMetronome = 1.0.obs;
   RxDouble volumeMetronome = 100.0.obs;
@@ -43,6 +47,8 @@ class PlayerController extends GetxController {
       MixPlayer.frequecy.length,
       (index) => FrequencyModel(
           key_frequency: MixPlayer.frequecy[index], controller_value: 0)).obs;
+
+
 
   setupPlayer() {
     // setup player
@@ -56,11 +62,15 @@ class PlayerController extends GetxController {
           player.updateVolume(volumeMetronome.value);
           player.setStereoBalance(stereoMetronome.value);
           _subscribeToEvents();
+          MixService.instance.init().then((value){
+            MixService.instance.downLoadTask(
+                request: audioItem.urlSong.map((e) => e.url).toList());
+          });
 
-          MixService.instance.downLoadTask(
-              request: audioItem.urlSong.map((e) => e.url).toList());
-          downloadDialog();
+         downloadDialog();
           MixService.instance.onDownLoadTask.listen((event) {
+           //  print("downloadDialog  ${event.requestLoop} / ${event.requestUrl.length} => ${event.progress}");
+            onDownLoadTaskSubject.add(event);
             if (event.isFinish) {
               for (int i = 0; i < event.download.length; i++) {
                 audioItem.urlSong[i].download = event.download[i];
@@ -68,6 +78,7 @@ class PlayerController extends GetxController {
               audioItemSubject.value = audioItem;
               Get.back();
             }
+
           });
           MixService.instance.onProcuessRenderToBuffer.listen((event) {
             print("download -> ${event}");
@@ -77,6 +88,8 @@ class PlayerController extends GetxController {
           });
 
         });
+
+
 
   }
 
@@ -157,7 +170,9 @@ class PlayerController extends GetxController {
           child: StreamBuilder<DownLoadTask>(
               stream: MixService.instance.onDownLoadTask,
               builder: (context, snapshot) {
+
                 if (snapshot.hasData) {
+               //   print("downloadDialog  ${snapshot.data!.requestLoop} / ${snapshot.data!.requestUrl.length} => ${snapshot.data!.progress}");
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

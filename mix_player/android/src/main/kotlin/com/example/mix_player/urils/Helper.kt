@@ -1,5 +1,6 @@
 package com.example.mix_player.urils
 
+import android.os.StrictMode
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
@@ -8,6 +9,9 @@ import java.net.URL
 class Helper {
     companion object{
         fun isReachable(urlString: String?,callback: (value: Boolean)-> Unit) {
+            val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
+
+            StrictMode.setThreadPolicy(policy)
             var connection: HttpURLConnection? = null
             try {
                 val u = URL("http://www.google.com/")

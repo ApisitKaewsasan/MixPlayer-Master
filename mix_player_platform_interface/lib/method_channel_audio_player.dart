@@ -8,18 +8,23 @@ import 'models/request/AudioData.dart';
 import 'models/respone/playback_event_message.dart';
 
 /// An implementation of [JustAudioPlatform] that uses method channels.
+const METHODCHANNEL_NAME = 'mix_audio_player.methods';
 class MethodChannelMixAudio extends MixAudioPlatform {
 
-  static final _mainChannel = MethodChannel('mix_audio_player.methods');
+  static final _mainChannel = MethodChannel(METHODCHANNEL_NAME);
 
   @override
-  Future<MixAudioPlayerPlatform> init(AudioData request) async {
+   init(AudioData request) async {
     await _mainChannel.invokeMethod<void>('init',request.toMap());
-    return MethodChannelAudioPlayer(request.playerId);
+    return MethodChannelAudioPlayer(id: request.playerId);
   }
 
   @override
-  MixAudioPlayerPlatform service()=>MethodChannelAudioPlayer("");
+  Future<MixAudioPlayerPlatform> initService(String playerId) async {
+    await _mainChannel.invokeMethod<void>('initService',{'playerId':playerId});
+    return MethodChannelAudioPlayer();
+  }
+
 
 
   // Map<dynamic, dynamic> _invokeMethod( [
@@ -44,16 +49,12 @@ class MethodChannelMixAudio extends MixAudioPlatform {
 
 /// An implementation of [AudioPlayerPlatform] that uses method channels.
 class MethodChannelAudioPlayer extends MixAudioPlayerPlatform {
-  final MethodChannel _channel;
+  late final MethodChannel _channel;
 
   final _onErrorSubject = BehaviorSubject<String>();
-  final _onPlayerStateChangedSubject = BehaviorSubject<String>();
-  final _onDownLoadTaskSubject =  BehaviorSubject<String>();
-  final _onProcuessRenderToBufferSubject = BehaviorSubject<double>();
 
-
-  MethodChannelAudioPlayer(String id)
-      : _channel = MethodChannel('mix_audio_player.methods'),
+  MethodChannelAudioPlayer({String id = "0"})
+      : _channel = MethodChannel(METHODCHANNEL_NAME),
         super(id){
     _channel.setMethodCallHandler((call) => platformCallHandler(call));
 
@@ -77,9 +78,9 @@ class MethodChannelAudioPlayer extends MixAudioPlayerPlatform {
       case 'onError':
         _onErrorSubject.add(callArgs['message'] as String);
         break;
-      case 'onDownLoadTaskStream':
-         _onDownLoadTaskSubject.add(callArgs['taskJson'] as String);
-        break;
+      // case 'onDownLoadTaskStream':
+      //    _onDownLoadTaskSubject.add(callArgs['taskJson'] as String);
+      //   break;
     }
   }
 
