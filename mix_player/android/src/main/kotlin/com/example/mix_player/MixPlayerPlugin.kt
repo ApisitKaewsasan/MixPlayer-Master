@@ -2,7 +2,9 @@ package com.example.mix_player
 
 import android.R.attr.identifier
 import android.content.Context
+import android.os.Build
 import androidx.annotation.NonNull
+import androidx.annotation.RequiresApi
 import com.example.mix_player.models.*
 import com.example.mix_player.service.AudioPlayerService
 import com.example.mix_player.service.DownaloadServices
@@ -12,6 +14,8 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.runBlocking
 
 
 /** MixPlayerPlugin */
@@ -49,6 +53,7 @@ class MixPlayerPlugin: FlutterPlugin, MethodCallHandler {
 
     }
 
+  @RequiresApi(Build.VERSION_CODES.M)
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
 
     var request = if (call.arguments!=null) call.arguments<HashMap<String, Any>>() else {
@@ -64,18 +69,25 @@ class MixPlayerPlugin: FlutterPlugin, MethodCallHandler {
     var player = this.getOrCreatePlayer(playerId)
 
     //AudioItem(playerId: request["playerId"] as! String, title: request["title"] as! String, albumTitle: request["albumTitle"] as! String, artist: request["artist"] as! String, albumimageUrl: request["albumimageUrl"] as! String, skipInterval: request["skipInterval"] as! Double, url: request["url"] as! String, volume: request["volume"] as! Double,enable_equalizer: request["enable_equalizer"] as! Bool,frequecy: request["frequecy"] as! [Int],isLocalFile: request["isLocalFile"] as! Bool)
+
     if (call.method == "init") {
         setupEventPlayer(playerId)
-      player.initData(AudioItem(
-        playerId,request["title"] as String,request["albumTitle"] as String,request["artist"] as String,
-        request["albumimageUrl"] as String,request["skipInterval"] as Double,request["url"] as String,
-        request["volume"] as Double,request["enable_equalizer"] as Boolean,request["frequecy"] as List<Int>,
-        request["isLocalFile"] as Boolean
-      ))
+
+        runBlocking {
+            player.initData(AudioItem(
+                playerId,request["title"] as String,request["albumTitle"] as String,request["artist"] as String,
+                request["albumimageUrl"] as String,request["skipInterval"] as Double,request["url"] as String,
+                request["volume"] as Double,request["enable_equalizer"] as Boolean,request["frequecy"] as List<Int>,
+                request["isLocalFile"] as Boolean
+            ))
+        }
+
       result.success(0)
     }else if(call.method == "initService"){
         setupEventServer()
         result.success(0)
+    }else if(call.method == "play"){
+       player.play(request["time"] as Double)
     }else if(call.method == "setPan"){
 
     }else if(call.method == "downloadTask"){
@@ -93,13 +105,12 @@ class MixPlayerPlugin: FlutterPlugin, MethodCallHandler {
   }
 
 
-
-
+  @RequiresApi(Build.VERSION_CODES.M)
   fun getOrCreatePlayer(playerId: String):AudioPlayerService{
      if (players[playerId]!=null){
        return players[playerId]!!
      }
-      val newPlayer = AudioPlayerService(this,playerId)
+      val newPlayer = AudioPlayerService(this,playerId,this.context!!)
        players[playerId] = newPlayer
       return newPlayer
   }

@@ -21,7 +21,7 @@ import '../widget/pitch_key_dialog.dart';
 import '../widget/stereo_balance_dialog.dart';
 
 class PlayerController extends GetxController {
-  late MixPlayer player;
+   MixPlayer? player;
 
   var audioItemSubject =
       PlayerData(urlSong: audioItem.urlSong, artist: audioItem.artist,songName: audioItem.songName).obs;
@@ -33,8 +33,7 @@ class PlayerController extends GetxController {
   var playState = PlayerState.none.obs;
   var playbackEvent = PlaybackEventMessage(currentTime: 0, duration: 0).obs;
 
-
-  final onDownLoadTaskSubject =  BehaviorSubject<DownLoadTask>();
+  final onInitFirst = BehaviorSubject<bool>();
 
 
   // metronome ---
@@ -52,57 +51,54 @@ class PlayerController extends GetxController {
 
   setupPlayer() {
     // setup player
-    player = MixPlayer(
-        urlSong: audioItem.urlSong.map((e) => e.url).toList(),
-        duration: audioItem.duration,
-        onSuccess: () {
-          // download song from server
-          player.setModeLoop(false);
-          player.setSpeed(speedMetronome.value);
-          player.updateVolume(volumeMetronome.value);
-          player.setStereoBalance(stereoMetronome.value);
-          _subscribeToEvents();
-          MixService.instance.init().then((value){
-            MixService.instance.downLoadTask(
-                request: audioItem.urlSong.map((e) => e.url).toList());
-          });
 
-         downloadDialog();
-          MixService.instance.onDownLoadTask.listen((event) {
-           //  print("downloadDialog  ${event.requestLoop} / ${event.requestUrl.length} => ${event.progress}");
-            onDownLoadTaskSubject.add(event);
-            if (event.isFinish) {
-              for (int i = 0; i < event.download.length; i++) {
-                audioItem.urlSong[i].download = event.download[i];
-              }
-              audioItemSubject.value = audioItem;
-              Get.back();
-            }
+   downloadDialog();
+   MixService.instance.downLoadTasks(url:  audioItem.urlSong.map((e) => e.url).toList());
+    MixService.instance.onDownLoadTask.listen((event) {
+      if (event.isFinish) {
+        player = MixPlayer(
+            urlSong: event.download.map((e) => e.localUrl!).toList(),
+            duration: audioItem.duration,
+            onSuccess: () {
+              // download song from server
+              player!.setModeLoop(false);
+              player!.setSpeed(speedMetronome.value);
+              player!.updateVolume(volumeMetronome.value);
+              player!.setStereoBalance(stereoMetronome.value);
+              _subscribeToEvents();
+            });
 
-          });
-          MixService.instance.onProcuessRenderToBuffer.listen((event) {
-            print("download -> ${event}");
-            if(event == 100){
-              Get.back();
-            }
-          });
+        for (int i = 0; i < audioItemSubject.value.urlSong.length; i++) {
+          audioItemSubject.value.urlSong[i].download = event.download[i];
+        }
+        audioItemSubject.refresh();
 
-        });
+        Get.back();
+      }
+    });
+    MixService.instance.onProcuessRenderToBuffer.listen((event) {
+      print("download -> ${event}");
+      if(event == 100){
+        Get.back();
+      }
+    });
+
+
 
 
 
   }
 
   audioExport(FileExtension extension) async {
-    if (player.player.first.playing) {
+    if (player!.player.first.playing) {
       togglePlay();
     }
     List<String> urlExport = [];
     List<double> panPlayerConfig = [];
     for (int i = 0; i < audioItemSubject.value.urlSong.length; i++) {
-      if (player.player[i].isMuse) {
+      if (player!.player[i].isMuse) {
         urlExport.add(audioItemSubject.value.urlSong[i].url);
-        panPlayerConfig.add(player.player[i].pan);
+        panPlayerConfig.add(player!.player[i].pan);
       }
     }
 
@@ -110,55 +106,55 @@ class PlayerController extends GetxController {
         request: urlExport,
         extension: extension,
         reverbConfig: 0.0,
-        speedConfig: player.speed,
-        panConfig: player.pan,
-        pitchConfig: player.pitch,
+        speedConfig: player!.speed,
+        panConfig: player!.pan,
+        pitchConfig: player!.pitch,
         frequencyConfig: MixPlayer.frequecy,
-        gainConfig: player.frequecy_value,
+        gainConfig: player!.frequecy_value,
         panPlayerConfig: panPlayerConfig);
     print("export : ${file}");
   }
 
-  togglePlay() => player.togglePlay(at: playbackEvent.value.currentTime);
+  togglePlay() => player!.togglePlay(at: playbackEvent.value.currentTime);
 
   setStereoBalance(double pan) {
     stereoMetronome.value = pan;
     if (switchMetronome.value) {
-      player.setStereoBalance(pan);
+      player!.setStereoBalance(pan);
     }
   }
 
   setSpeed(double speed) {
     speedMetronome.value = speed;
     if (switchMetronome.value) {
-      player.setSpeed(speed);
+      player!.setSpeed(speed);
     }
   }
 
   setVolumeMetronome(double volume) {
     volumeMetronome.value = volume;
     if (switchMetronome.value) {
-      player.updateVolume(volume);
+      player!.updateVolume(volume);
     }
   }
 
   setSwitchMetronome({required bool status}) {
     if (status) {
-      player.setStereoBalance(stereoMetronome.value);
-      player.setSpeed(speedMetronome.value);
-      player.updateVolume(volumeMetronome.value);
+      player!.setStereoBalance(stereoMetronome.value);
+      player!.setSpeed(speedMetronome.value);
+      player!.updateVolume(volumeMetronome.value);
     } else {
-      player.setStereoBalance(0);
-      player.setSpeed(1.0);
+      player!.setStereoBalance(0);
+      player!.setSpeed(1.0);
       // player.updateVolume()
     }
   }
 
-  goforward({required double time}) => player.goforward(time: time);
+  goforward({required double time}) => player!.goforward(time: time);
 
-  gobackward({required double time}) => player.gobackward(time: time);
+  gobackward({required double time}) => player!.gobackward(time: time);
 
-  seek({required double position}) => player.seek(position: position);
+  seek({required double position}) => player!.seek(position: position);
 
   downloadDialog() {
     Get.defaultDialog(
@@ -171,7 +167,7 @@ class PlayerController extends GetxController {
               stream: MixService.instance.onDownLoadTask,
               builder: (context, snapshot) {
 
-                if (snapshot.hasData) {
+
                //   print("downloadDialog  ${snapshot.data!.requestLoop} / ${snapshot.data!.requestUrl.length} => ${snapshot.data!.progress}");
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,7 +177,7 @@ class PlayerController extends GetxController {
                         height: 20,
                       ),
                       LinearProgressIndicator(
-                        value: snapshot.data!.progress,
+                        value: snapshot.hasData?snapshot.data!.progress:0.0,
                         backgroundColor: Colors.grey,
                         valueColor: const AlwaysStoppedAnimation<Color>(
                             Colors.blueAccent),
@@ -193,9 +189,9 @@ class PlayerController extends GetxController {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                              "${snapshot.data!.requestLoop}/${snapshot.data!.requestUrl.length}"),
+                              "${snapshot.hasData?snapshot.data!.requestLoop:0}/${snapshot.hasData?snapshot.data!.requestUrl.length:audioItemSubject.value.urlSong.length}"),
                           Text(
-                              "${(snapshot.data!.progress * 100).toStringAsFixed(1)}%")
+                              "${(snapshot.hasData?snapshot.data!.progress*100:0.0 * 100).toStringAsFixed(1)}%")
                         ],
                       ),
                       SizedBox(
@@ -215,9 +211,6 @@ class PlayerController extends GetxController {
                       )
                     ],
                   );
-                } else {
-                  return const SizedBox();
-                }
               }),
         ));
   }
@@ -260,10 +253,10 @@ class PlayerController extends GetxController {
   }
 
   _subscribeToEvents() {
-    player.playerStateChangedStream.listen((value) {
+    player!.playerStateChangedStream.listen((value) {
       playState.value = value;
     });
-    player.playbackEventStream.listen((value) {
+    player!.playbackEventStream.listen((value) {
       playbackEvent.value = value;
     });
   }
@@ -313,7 +306,7 @@ class PlayerController extends GetxController {
         MixPlayer.frequecy.length,
         (index) => FrequencyModel(
             key_frequency: MixPlayer.frequecy[index], controller_value: 0)).obs;
-    player.playerReset();
+    player!.playerReset();
   }
 
   metronomeDialog() {
@@ -327,22 +320,34 @@ class PlayerController extends GetxController {
   }
 
   bool midiTrackButtonStatus({required int key, required PlayerUrl item}) {
-    if (item.download != null &&
-            item.download!.downloadState == DownloadState.error ||
-        player.player[key].isMuse == false) {
-      return false;
-    } else if (item.download != null &&
-            item.download!.downloadState == DownloadState.finish ||
-        player.player[key].isMuse) {
-      return true;
-    } else {
+    if(player!=null && player!.player.isNotEmpty){
+      if (item.download != null &&
+          item.download!.downloadState == DownloadState.error || item.download!.downloadState == DownloadState.none ||
+          player!.player[key].isMuse == false) {
+
+        return false;
+      } else if (item.download != null &&
+          item.download!.downloadState == DownloadState.finish ||
+          player!.player[key].isMuse) {
+        return true;
+      } else {
+        return false;
+      }
+    }else {
       return false;
     }
+
   }
 
   @override
   void onInit() {
     super.onInit();
-    setupPlayer();
+    //player = MixPlayer(urlSong: audioItem.urlSong.map((e) => e.url).toList());
+    onInitFirst.value = true;
+    onInitFirst.listen((p0) {
+      setupPlayer();
+
+    });
+
   }
 }

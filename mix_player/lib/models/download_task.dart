@@ -7,7 +7,7 @@ enum DownloadState{
   cancel,
   finish,
   error,
-  alreadyDownloaded
+  downloading
 }
 
 class DownLoadTask {
@@ -49,7 +49,7 @@ class Download {
   double? progress;
   DownloadState? downloadState;
 
-  Download({this.url, this.localUrl, this.progress, this.downloadState});
+  Download({this.url, this.localUrl, this.progress, this.downloadState = DownloadState.none});
 
   Download.fromJson(Map<String, dynamic> json) {
     url = json['url'] as String;
@@ -60,7 +60,7 @@ class Download {
 
     getPlayerState(String event) {
      if (event == 'alreadyDownloaded') {
-      return DownloadState.alreadyDownloaded;
+      return DownloadState.downloading;
     } else if (event == 'start') {
       return DownloadState.start;
     } else if (event == 'finish') {

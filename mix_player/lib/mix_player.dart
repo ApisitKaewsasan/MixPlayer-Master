@@ -7,8 +7,10 @@ import 'package:mix_player/player_audio.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:uuid/uuid.dart';
 
+import 'mix_service.dart';
 import 'models/PlaybackEventMessage.dart';
 import 'models/audio_item.dart';
+import 'models/download_task.dart';
 import 'models/player_state.dart';
 
 class MixPlayer {
@@ -34,10 +36,11 @@ class MixPlayer {
   final playbackEventStream = BehaviorSubject<PlaybackEventMessage>();
   final playerStateChangedStream = BehaviorSubject<PlayerState>();
 
-  MixPlayer({required List<String> urlSong,double? duration,Function? onSuccess}) {
+  MixPlayer({required List<String> urlSong,double? duration=0.0,Function()? onSuccess}) {
     this.urlSong = urlSong;
     this.duration = duration;
     playerStateChangedStream.add(PlayerState.ready);
+
     for (int i = 0; i < urlSong.length; i++) {
       player.add(PlayerAudio());
       player[i].setAudioItem(
@@ -47,17 +50,21 @@ class MixPlayer {
               albumTitle: "refvrecf",
               artist: "wefcerscf",
               albumimageUrl:
-                  "https://images.iphonemod.net/wp-content/uploads/2022/01/Apple-Music-got-2nd-place-in-music-streaming-market-cover.jpg",
+              "https://images.iphonemod.net/wp-content/uploads/2022/01/Apple-Music-got-2nd-place-in-music-streaming-market-cover.jpg",
               url: urlSong[i],
               isLocalFile: true,frequecy: frequecy,duration: duration!), onSuccess: (){
         if(i == (urlSong.length-1)){
-          onSuccess!();
+          if(onSuccess!=null) onSuccess();
           playbackEventStream.add(PlaybackEventMessage(currentTime: 0,duration: this.duration!));
         }
       });
       _subscribeToEvents(index: i,playerAudio: player[i]);
 
     }
+
+
+
+
   }
 
   togglePlay({double at = 0.0}) {

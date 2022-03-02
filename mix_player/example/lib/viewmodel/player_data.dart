@@ -21,10 +21,10 @@ class PlayerData{
 
  PlayerData audioItem = PlayerData(songName: "Johnny Knox-I Like You[Demo]",artist: "Artist Name -- Alburm Name",urlSong: [
    PlayerUrl(url: "https://dev-api.muse-master.com/api/v1/files/songtest/vocals.mp3",icon: "assets/images/png/mic.png",download: Download()),
-   // PlayerUrl(url: "https://dev-api.muse-master.com/api/v1/files/songtest/bass.mp3",icon: "assets/images/png/bass.png",download: Download()),
-   // PlayerUrl(url: "https://dev-api.muse-master.com/api/v1/files/songtest/drums.mp3",icon: "assets/images/png/drums.png",download: Download()),
-   // PlayerUrl(url: "https://dev-api.muse-master.com/api/v1/files/songtest/other.mp3",icon: "assets/images/png/orther.png",download: Download()),
-   // PlayerUrl(url: "https://dev-api.muse-master.com/api/v1/files/songtest/piano.mp3",icon: "assets/images/png/piano.png",download: Download())
+   PlayerUrl(url: "https://dev-api.muse-master.com/api/v1/files/songtest/bass.mp3",icon: "assets/images/png/bass.png",download: Download()),
+   PlayerUrl(url: "https://dev-api.muse-master.com/api/v1/files/songtest/drums.mp3",icon: "assets/images/png/drums.png",download: Download()),
+    PlayerUrl(url: "https://dev-api.muse-master.com/api/v1/files/songtest/other.mp3",icon: "assets/images/png/orther.png",download: Download()),
+    PlayerUrl(url: "https://dev-api.muse-master.com/api/v1/files/songtest/piano.mp3",icon: "assets/images/png/piano.png",download: Download())
  ],duration: 182.88326530612244);
 
  // PlayerData audioItem = PlayerData(songName: "Johnny Knox-I Like You[Demo]",urlSong: [

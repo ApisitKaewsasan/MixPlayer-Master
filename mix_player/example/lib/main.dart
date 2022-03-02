@@ -20,7 +20,11 @@ void main() {
 class Main extends GetView<PlayerController> {
 
   init(){
-    Get.put(PlayerController());
+    Get.put(PlayerController()).obs.listen((p0) {
+        print("32er32243");
+    });
+    //controller.setupPlayer();
+   // Get.
   }
 
   @override
@@ -42,14 +46,7 @@ class Main extends GetView<PlayerController> {
         padding: const EdgeInsets.only(top: 10),
         child: Column(
           children: [
-            StreamBuilder<DownLoadTask>(stream:  controller.onDownLoadTaskSubject.stream,builder: (context,shotshot){
-            if(shotshot.hasData){
-              print("downloadDialog  ${shotshot}");
-              return Text("asdsc ${shotshot.data!.progress}");
-            }else{
-              return Text("asdsc 0.0");
-            }
-           }),
+
             Expanded(
                 child: SingleChildScrollView(
                   child: Column(
@@ -118,8 +115,11 @@ class Main extends GetView<PlayerController> {
         children: [
           RawMaterialButton(
             onPressed: () {
-              controller.player.player[key].toggleMute();
-              controller.audioItemSubject.refresh();
+              if(controller.player!=null){
+                controller.player!.player[key].toggleMute();
+                controller.audioItemSubject.refresh();
+              }
+
             },
             elevation: 2.0,
             fillColor: controller.midiTrackButtonStatus(key: key,item: item)?Colors.white:Colors.grey.shade200,
@@ -135,19 +135,22 @@ class Main extends GetView<PlayerController> {
               child: SfSlider(
             min: 0.0,
             max: 100.0,
-            value: controller.player.player[key].volume,
+            value: controller.player!=null && controller.player!.player.isNotEmpty?controller.player!.player[key].volume:0,
             interval: 20,
             showTicks: false,
             showLabels: false,
             enableTooltip: false,
             minorTicksPerInterval: 1,
             onChanged: (dynamic value) {
-              controller.player.player[key].updateVolume(value);
-              controller.audioItemSubject.refresh();
+              if(controller.player!=null) {
+                controller.player!.player[key].updateVolume(value);
+                controller.audioItemSubject.refresh();
+              }
             },
           )),
           IconButton(onPressed: () {
-            controller.stereoBalanceDialog(playerAudio: controller.player.player[key]);
+
+            controller.stereoBalanceDialog(playerAudio: controller.player!.player[key]);
           }, icon: const Icon(Icons.more_vert))
         ],
       ),

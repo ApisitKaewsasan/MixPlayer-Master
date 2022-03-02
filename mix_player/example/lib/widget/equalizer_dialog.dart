@@ -61,7 +61,7 @@ class Equalizer extends StatelessWidget {
                               stepSize: 1,
                               onChanged: (dynamic value) {
                                 snapshot[key] = FrequencyModel(key_frequency: values.key_frequency,controller_value: value);
-                                controller.player.setEqualizer(index: key, value: value);
+                                controller.player!.setEqualizer(index: key, value: value);
                               },
                             ),
                           )

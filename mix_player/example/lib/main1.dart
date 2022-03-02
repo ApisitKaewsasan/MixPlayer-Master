@@ -52,7 +52,7 @@ class _MainState extends State<Main> {
     //
     // });
 
-    MixService.instance.downLoadTasks(url:  audioItem.urlSong[0].url);
+    MixService.instance.downLoadTasks(url:  audioItem.urlSong.map((e) => e.url).toList());
 
   }
 
@@ -64,10 +64,10 @@ class _MainState extends State<Main> {
   Widget build(BuildContext context) {
     init();
     return Center(
-      child:  StreamBuilder<double>(stream: onDownLoadTaskSubject.stream,builder:(context,snapshot){
+      child:  StreamBuilder<DownLoadTask>(stream: MixService.instance.onDownLoadTask,builder:(context,snapshot){
           if(snapshot.hasData){
-            print("onDownload2 => ${snapshot.data!}");
-            return Text("asdsc ${snapshot.data!}");
+           // print('${snapshot.data!.requestLoop}/${snapshot.data!.requestUrl.length} procuess => ${snapshot.data!.progress*100}%');
+            return Text("asdsc ${snapshot.data!.progress*100}%");
           }else{
             return Text("asdsc ${cdsfc}");
           }

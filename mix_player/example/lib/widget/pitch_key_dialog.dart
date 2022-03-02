@@ -13,7 +13,7 @@ class PitchKey extends StatelessWidget {
   final controller = Get.find<PlayerController>();
 
   init(){
-    pitchSubject.add(controller.player.pitch);
+    pitchSubject.add(controller.player!.pitch);
   }
   @override
   Widget build(BuildContext context) {
@@ -42,14 +42,14 @@ class PitchKey extends StatelessWidget {
                     stepSize: 1,
                     onChanged: (dynamic value) {
                       pitchSubject.add(value);
-                      controller.player.setPitch(value);
+                      controller.player!.setPitch(value);
                     },
                   ):const SizedBox();
                 }),
                 SizedBox(height: 30,),
                 TextButton(onPressed: (){
                   pitchSubject.add(0);
-                  controller.player.setPitch(0);
+                  controller.player!.setPitch(0);
                 }, child: Text("Reset"))
               ],
             ),

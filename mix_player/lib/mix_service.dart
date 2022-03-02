@@ -12,6 +12,7 @@ import 'package:uuid/uuid.dart';
 
 import 'models/download_task.dart';
 import 'models/extension.dart';
+import 'package:collection/collection.dart';
 
 class MixService{
 
@@ -44,23 +45,49 @@ class MixService{
   }
 
 
-  downLoadTasks({required String url}) async {
-    String savePath = await getFilePath(url.split("/").last);
-    deleteFile(savePath);
-    Dio dio = Dio();
+  downLoadTasks({required List<String> url}) async {
+    var tempProcuess = List.generate(url.length, (index) => 0.0);
+    List<Download> tempDownload = List.generate(url.length, (index) => Download(progress: 0.0,url: url[index]));
+    var loopSuccess = 0;
 
-    dio.download(
-      url,
-      savePath,
-      onReceiveProgress: (rcv, total) {
-        print(
-            '${((rcv / total) * 100)}% received: ${rcv.toStringAsFixed(0)} out of total: ${total.toStringAsFixed(0)}');
+    for (var i = 0; i < url.length; i++) {
+      String savePath = await getFilePath(url[i].split("/").last);
+      deleteFile(savePath);
+      tempDownload[i].localUrl = savePath;
 
-      },
-      deleteOnError: true,
-    ).then((_) {
-      print("savePath => ${savePath}");
-    });
+      Dio dio = Dio();
+      dio.download(
+        url[i],
+        tempDownload[i].localUrl,
+        onReceiveProgress: (rcv, total) {
+          tempProcuess[i] = (rcv / total) * 100;
+          tempDownload[i].progress = tempProcuess[i];
+          tempDownload[i].downloadState = DownloadState.downloading;
+          _onDownLoadTaskSubject.add(DownLoadTask(
+            requestUrl: url,requestLoop: int.parse(((tempProcuess.sum/url.length)/(100/url.length)).ceilToDouble().toStringAsFixed(0)),progress: ((tempProcuess.sum/url.length)/100),isFinish: false,download: tempDownload
+          ));
+         // print(" ${((tempProcuess.sum/url.length)/(100/url.length)).ceilToDouble().toStringAsFixed(0)} / ${url.length} tempProcuess =>${((tempProcuess.sum/url.length)/100)}");
+
+        },
+        deleteOnError: true,
+      ).then((_) {
+        loopSuccess++;
+        tempDownload[i].downloadState = DownloadState.finish;
+        if(loopSuccess==url.length){
+          _onDownLoadTaskSubject.add(DownLoadTask(
+              requestUrl: url,requestLoop: int.parse(((tempProcuess.sum/url.length)/(100/url.length)).ceilToDouble().toStringAsFixed(0)),progress: ((tempProcuess.sum/url.length)/100),isFinish: true,download: tempDownload
+          ));
+        }
+
+      },onError: (e){
+        print("Error ${e}");
+        tempDownload[i].downloadState = DownloadState.error;
+        tempDownload[i].progress = 100;
+        _onDownLoadTaskSubject.add(DownLoadTask(
+            requestUrl: url,requestLoop: int.parse(((tempProcuess.sum/url.length)/(100/url.length)).ceilToDouble().toStringAsFixed(0)),progress: ((tempProcuess.sum/url.length)/100),isFinish: true,download: tempDownload
+        ));
+      });
+    }
   }
 
   Future<String> getFilePath(uniqueFileName) async {
