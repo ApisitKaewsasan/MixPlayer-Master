@@ -54,7 +54,7 @@ class MixService{
       String savePath = await getFilePath(url[i].split("/").last);
       deleteFile(savePath);
       tempDownload[i].localUrl = savePath;
-
+      tempDownload[i].downloadState = DownloadState.downloading;
       Dio dio = Dio();
       dio.download(
         url[i],
@@ -62,7 +62,7 @@ class MixService{
         onReceiveProgress: (rcv, total) {
           tempProcuess[i] = (rcv / total) * 100;
           tempDownload[i].progress = tempProcuess[i];
-          tempDownload[i].downloadState = DownloadState.downloading;
+          tempDownload[i].downloadState  = DownloadState.downloading;
           _onDownLoadTaskSubject.add(DownLoadTask(
             requestUrl: url,requestLoop: int.parse(((tempProcuess.sum/url.length)/(100/url.length)).ceilToDouble().toStringAsFixed(0)),progress: ((tempProcuess.sum/url.length)/100),isFinish: false,download: tempDownload
           ));
@@ -80,12 +80,17 @@ class MixService{
         }
 
       },onError: (e){
+
+        loopSuccess++;
         print("Error ${e}");
         tempDownload[i].downloadState = DownloadState.error;
         tempDownload[i].progress = 100;
-        _onDownLoadTaskSubject.add(DownLoadTask(
-            requestUrl: url,requestLoop: int.parse(((tempProcuess.sum/url.length)/(100/url.length)).ceilToDouble().toStringAsFixed(0)),progress: ((tempProcuess.sum/url.length)/100),isFinish: true,download: tempDownload
-        ));
+        if(loopSuccess==url.length){
+          _onDownLoadTaskSubject.add(DownLoadTask(
+              requestUrl: url,requestLoop: int.parse(((tempProcuess.sum/url.length)/(100/url.length)).ceilToDouble().toStringAsFixed(0)),progress: ((tempProcuess.sum/url.length)/100),isFinish: true,download: tempDownload
+          ));
+        }
+
       });
     }
   }

@@ -68,16 +68,19 @@ class SeekBar extends StatelessWidget {
                           max: duration.inMilliseconds.toDouble(),
                           value: snapshot.data!.inMilliseconds.toDouble(),
                           onChanged: (value) {
-                            controller.dragValue = true;
-                            controller.seekBarValue = value;
-                            _seekSubject.add(Duration(milliseconds: value.round()));
+                            //if(!controller.player!.playerErrorMessage.value){
+                              controller.dragValue = true;
+                              controller.seekBarValue = value;
+                              _seekSubject.add(Duration(milliseconds: value.round()));
+                           // }
+
 
                           },
                           onChangeEnd: (value) {
-                            if(onChangeEnd!=null){
+                          //  if(onChangeEnd!=null && !controller.player!.playerErrorMessage.value){
                               controller.dragValue = false;
                               onChangeEnd!(Duration(milliseconds: value.round()));
-                            }
+                          //  }
                           },
                         ),
                       ),

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ffi';
 
 import 'package:audio_player_platform_interface/audio_player_platform_interface.dart';
 import 'package:audio_player_platform_interface/models/player_mode.dart';
@@ -19,6 +20,8 @@ class MixPlayer {
   late double? duration;
   bool modeLoop = false;
 
+
+
   static List<double> frequecy = [
     32,
     64,
@@ -35,8 +38,10 @@ class MixPlayer {
 
   final playbackEventStream = BehaviorSubject<PlaybackEventMessage>();
   final playerStateChangedStream = BehaviorSubject<PlayerState>();
+  final playerErrorMessage = BehaviorSubject<bool>();
 
-  MixPlayer({required List<String> urlSong,double? duration=0.0,Function()? onSuccess}) {
+  MixPlayer({required List<String> urlSong,double? duration=0.0,Function()? onSuccess_}) {
+
     this.urlSong = urlSong;
     this.duration = duration;
     playerStateChangedStream.add(PlayerState.ready);
@@ -53,10 +58,12 @@ class MixPlayer {
               "https://images.iphonemod.net/wp-content/uploads/2022/01/Apple-Music-got-2nd-place-in-music-streaming-market-cover.jpg",
               url: urlSong[i],
               isLocalFile: true,frequecy: frequecy,duration: duration!), onSuccess: (){
-        if(i == (urlSong.length-1)){
-          if(onSuccess!=null) onSuccess();
-          playbackEventStream.add(PlaybackEventMessage(currentTime: 0,duration: this.duration!));
-        }
+
+            if(i == (urlSong.length-1)){
+
+              if(onSuccess_!=null) onSuccess_.call();
+              playbackEventStream.add(PlaybackEventMessage(currentTime: 0,duration: this.duration!));
+            }
       });
       _subscribeToEvents(index: i,playerAudio: player[i]);
 
@@ -65,20 +72,26 @@ class MixPlayer {
 
 
 
+
+
   }
 
   togglePlay({double at = 0.0}) {
-    for (int i=0;i<player.length;i++) {
-      if (player[i].playState == PlayerState.playing) {
-        player[i].pause();
-        print("pause ${at}");
-      }else if(player[i].playState == PlayerState.paused ){
-        print("resume ${at}");
-        player[i].resume(at: at);
-      } else {
-        player[i].play(at: 0.0);
+
+
+      for (int i=0;i<player.length;i++) {
+        if (player[i].playState == PlayerState.playing) {
+          player[i].pause();
+          print("pause ${at}");
+        }else if(player[i].playState == PlayerState.paused ){
+          print("resume ${at}");
+          player[i].resume(at: at);
+        } else {
+          player[i].play(at: 0.0);
+        }
       }
-    }
+
+
   }
 
   reloadPlay(){
@@ -166,6 +179,11 @@ class MixPlayer {
     setPitch(0.0);
     updateVolume(100.0);
     setStereoBalance(0);
+    player.forEach((element) {
+      if(!element.isMuse){
+         element.toggleMute();
+      }
+    });
   }
 
   double get pitch  => player.first.pitch;
@@ -180,11 +198,33 @@ class MixPlayer {
 
       }else{
         playerStateChangedStream.add(event);
+
       }
 
     });
     playerAudio.playbackEventStream.listen((event) {
+
+
       playbackEventStream.add(PlaybackEventMessage(currentTime: event.currentTime,duration: event.duration > 0.0?event.duration:this.duration!));
+      for(int i =0;i<player.length;i++){
+        if(i==0){
+          print("*************************");
+        }
+        if(player.first.playbackEventMessage.currentTime != player[i].playbackEventMessage.currentTime){
+
+          print("ok player ${i+1} => ${player[i].playbackEventMessage.currentTime}");
+
+
+
+        }else{
+          print("no player ${i+1} => ${player[i].playbackEventMessage.currentTime}");
+        }
+
+        if((i+1)==player.length){
+          print("*************************");
+        }
+
+      }
     });
 
   }

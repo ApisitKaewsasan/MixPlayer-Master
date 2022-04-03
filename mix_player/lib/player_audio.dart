@@ -57,6 +57,7 @@ class PlayerAudio{
   _setPlatform(Function onSuccess) async {
 
     _platform = await MixAudioPlatform.instance.init(AudioData(
+
         playerId: playerId,
         url: audioItem!.url,
         volume: volume,
@@ -66,6 +67,7 @@ class PlayerAudio{
         albumTitle: audioItem!.albumTitle,
         skipInterval: audioItem!.skipInterval!, frequecy: audioItem!.frequecy!, enable_equalizer: audioItem!.enable_equalizer!,isLocalFile: audioItem!.isLocalFile));
     _subscribeToEvents(_platform);
+
     onSuccess();
   }
 
@@ -203,6 +205,8 @@ class PlayerAudio{
     platform.playbackEventMessageStream.listen((event) {
       playbackEventMessage = event;
       _eventSubject.add(PlaybackEventMessage(playerId: event.playerId,duration: event.duration,currentTime: event.currentTime));
+
+
     });
     platform.onErrorPlayerStream.listen((event) {
       _errorSubject.add(event);

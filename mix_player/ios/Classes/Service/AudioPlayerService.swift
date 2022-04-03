@@ -194,6 +194,7 @@ class AudioPlayerService:NSObject{
     
     func setPitch(pitch:Float){
         if(player.state != .error){
+            print("efwcec \(pitch)")
             pitchControl.pitch = pitch * 100
         }
     }

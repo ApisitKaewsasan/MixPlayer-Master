@@ -1,6 +1,5 @@
 package com.example.mix_player
 
-import android.R.attr.identifier
 import android.content.Context
 import android.os.Build
 import androidx.annotation.NonNull
@@ -14,8 +13,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.runBlocking
+import java.util.concurrent.TimeUnit
 
 
 /** MixPlayerPlugin */
@@ -73,31 +71,50 @@ class MixPlayerPlugin: FlutterPlugin, MethodCallHandler {
     if (call.method == "init") {
         setupEventPlayer(playerId)
 
-        runBlocking {
+
             player.initData(AudioItem(
                 playerId,request["title"] as String,request["albumTitle"] as String,request["artist"] as String,
                 request["albumimageUrl"] as String,request["skipInterval"] as Double,request["url"] as String,
                 request["volume"] as Double,request["enable_equalizer"] as Boolean,request["frequecy"] as List<Int>,
                 request["isLocalFile"] as Boolean
             ))
-        }
+      //  System.out.println("43r43r4354r");
 
       result.success(0)
     }else if(call.method == "initService"){
         setupEventServer()
         result.success(0)
     }else if(call.method == "play"){
-       player.play(request["time"] as Double)
-    }else if(call.method == "setPan"){
+        player.play(request["time"] as Double)
 
+    }else if("pause" == call.method){
+        player.pause()
+    }else if("stop" == call.method){
+        player.stop()
+    }else if("resume" == call.method){
+        player.resume(request["time"] as Double)
+    }else if("skipForward" == call.method){
+        player.skipForward(request["time"] as Double)
+    }else if("skipBackward" == call.method){
+        player.skipBackward(request["time"] as Double)
+    }else if("seek" == call.method){
+        player.seek(TimeUnit.MILLISECONDS.convert((request["seek"] as Double).toLong(), TimeUnit.SECONDS).toInt())
+    }else if(call.method == "setPan"){
+        player.setPan((request["pan"] as Double).toFloat()/100)
+    }else if("updateVolume" == call.method){
+        player.updateVolume((request["volume"] as Double).toFloat()/100)
+    }else if("toggleMute" == call.method){
+        player.toggleMute()
+        // result(player.player.muted)
+
+    }else if("setPitch" == call.method){
+        player.setPitch((request["pitch"] as Double).toFloat())
     }else if(call.method == "downloadTask"){
         DownaloadServices(this,request["request"] as List<String>,context!!)
 
     }else if(call.method == "setModeLoop"){
 
-    }else if(call.method == "updateVolume"){
-
-    } else if(call.method == "setPlaybackRate"){
+    }else if(call.method == "setPlaybackRate"){
 
     } else {
       result.notImplemented()
@@ -126,6 +143,23 @@ class MixPlayerPlugin: FlutterPlugin, MethodCallHandler {
 
     //  channel.invokeMethod("onDownLoadTaskStream",gson.toJson(download))
   }
+
+    fun onPlayerStateChanged(playerId: String, state: AudioPlayerStates) {
+        // _channel.invokeMethod("onPlayerStateChanged", arguments: ["playerState":"\(state)"])
+        event["${EVENT_CHANNEL}.playerStateChangedStream.${playerId}"]?.sendEvent(state.toString())
+
+    }
+
+    fun playbackEventMessageStream(playerId: String, currentTime: Long, duration:Long){
+
+        val currentTimeConvert: Long =
+            (TimeUnit.SECONDS.convert(currentTime, TimeUnit.MILLISECONDS))
+        val durationConvert: Long =
+            (TimeUnit.SECONDS.convert(duration, TimeUnit.MILLISECONDS))
+        //System.out.println("tick  ${playerId} ${durationConvert}  ${currentTimeConvert}")
+
+        event["${EVENT_CHANNEL}.playbackEventMessageStream.${playerId}"]?.sendEvent( mapOf("playerId" to playerId, "currentTime" to currentTimeConvert.toDouble() , "duration" to durationConvert.toDouble()))
+    }
 
 
   override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {

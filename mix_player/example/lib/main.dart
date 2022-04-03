@@ -92,6 +92,7 @@ class Main extends GetView<PlayerController> {
                           )),
                       TextButton(
                           onPressed: () {
+
                             controller.playerReset();
                           },
                           child: Row(
@@ -109,6 +110,7 @@ class Main extends GetView<PlayerController> {
   }
 
   Widget midiTrack({required int key,required PlayerUrl item}) {
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       child: Row(
@@ -119,7 +121,6 @@ class Main extends GetView<PlayerController> {
                 controller.player!.player[key].toggleMute();
                 controller.audioItemSubject.refresh();
               }
-
             },
             elevation: 2.0,
             fillColor: controller.midiTrackButtonStatus(key: key,item: item)?Colors.white:Colors.grey.shade200,
@@ -142,10 +143,11 @@ class Main extends GetView<PlayerController> {
             enableTooltip: false,
             minorTicksPerInterval: 1,
             onChanged: (dynamic value) {
-              if(controller.player!=null) {
+
+             // if(controller.player!=null && !controller.player!.playerErrorMessage.value) {
                 controller.player!.player[key].updateVolume(value);
                 controller.audioItemSubject.refresh();
-              }
+             // }
             },
           )),
           IconButton(onPressed: () {

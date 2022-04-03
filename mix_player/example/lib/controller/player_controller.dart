@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,6 +14,7 @@ import 'package:mix_player/models/player_state.dart';
 import 'package:mix_player/player_audio.dart';
 import 'package:mix_player_example/viewmodel/player_data.dart';
 import 'package:mix_player_example/widget/equalizer_dialog.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 
@@ -48,31 +52,47 @@ class PlayerController extends GetxController {
           key_frequency: MixPlayer.frequecy[index], controller_value: 0)).obs;
 
 
+   Future<String> getFilePath(uniqueFileName) async {
+     String path = '';
+     Directory dir = await getApplicationDocumentsDirectory();
+     path = '${dir.path}/$uniqueFileName';
+     return path;
+   }
 
-  setupPlayer() {
-    // setup player
+  setupPlayer() async {
 
    downloadDialog();
    MixService.instance.downLoadTasks(url:  audioItem.urlSong.map((e) => e.url).toList());
     MixService.instance.onDownLoadTask.listen((event) {
       if (event.isFinish) {
+
         player = MixPlayer(
             urlSong: event.download.map((e) => e.localUrl!).toList(),
             duration: audioItem.duration,
-            onSuccess: () {
+            onSuccess_: () {
               // download song from server
-              player!.setModeLoop(false);
-              player!.setSpeed(speedMetronome.value);
-              player!.updateVolume(volumeMetronome.value);
-              player!.setStereoBalance(stereoMetronome.value);
+
               _subscribeToEvents();
+
+              if(event.download.where((element) => element.downloadState == DownloadState.finish).toList().isNotEmpty){
+                player!.setModeLoop(false);
+                player!.setSpeed(speedMetronome.value);
+                player!.updateVolume(volumeMetronome.value);
+                player!.setStereoBalance(stereoMetronome.value);
+
+              }else{
+                player!.playerErrorMessage.add(true);
+              }
+
+
             });
+
 
         for (int i = 0; i < audioItemSubject.value.urlSong.length; i++) {
           audioItemSubject.value.urlSong[i].download = event.download[i];
+
         }
         audioItemSubject.refresh();
-
         Get.back();
       }
     });
@@ -88,6 +108,8 @@ class PlayerController extends GetxController {
 
 
   }
+
+
 
   audioExport(FileExtension extension) async {
     if (player!.player.first.playing) {
@@ -259,6 +281,23 @@ class PlayerController extends GetxController {
     player!.playbackEventStream.listen((value) {
       playbackEvent.value = value;
     });
+    player!.playerErrorMessage.listen((value) {
+      if(value){
+        Get.defaultDialog(title: "system error",content: Center(
+          child: Column(
+            children: [
+              Text("Failed to load file, please try again later",textAlign: TextAlign.center),
+              SizedBox(height: 15,),
+              TextButton(
+                onPressed: () { Get.back();  },
+                child: Text("Close"),
+              )
+            ],
+          ),
+        ),titlePadding: EdgeInsets.only(left: 20,right: 20,top: 20),contentPadding: EdgeInsets.only(top: 20,right: 20,left: 20));
+      }
+    });
+
   }
 
   equalizerDialog() {
@@ -306,7 +345,10 @@ class PlayerController extends GetxController {
         MixPlayer.frequecy.length,
         (index) => FrequencyModel(
             key_frequency: MixPlayer.frequecy[index], controller_value: 0)).obs;
+
+
     player!.playerReset();
+    audioItemSubject.refresh();
   }
 
   metronomeDialog() {
