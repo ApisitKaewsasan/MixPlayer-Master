@@ -47,7 +47,7 @@ class AudioPlayerService(
 
         audioPlayer = MediaPlayer()
         audioPlayer.setDataSource(this.audioItem.url)
-        audioPlayer.prepare()
+
         audioPlayer.setOnCompletionListener {
             seek(0)
             playerStateChanged(AudioPlayerStates.ready)
@@ -76,6 +76,7 @@ class AudioPlayerService(
 //        val params: PlaybackParams = audioPlayer.playbackParams
 //        params.speed = 2F
 //        audioPlayer.playbackParams = params
+        audioPlayer.prepare()
         playerStateChanged(AudioPlayerStates.playing)
         changeSeekBar()
         audioPlayer.start()
@@ -210,20 +211,29 @@ class AudioPlayerService(
 
            // audioPlayer.playbackParameters = PlaybackParameters(params.speed, 1.0F)
 
-            audioPlayer.playbackParams = PlaybackParams().setPitch(1.0F)
+
+
+            val params = PlaybackParams()
+            params.pitch = 1.0F
+            audioPlayer.playbackParams = params
 
         }else if(pith>=1.0){
 
           //  audioPlayer.playbackParameters = PlaybackParameters(params.speed, pith)
-            audioPlayer.playbackParams = PlaybackParams().setPitch(pith)
+            val params = PlaybackParams()
+            params.pitch = pith
+            audioPlayer.playbackParams = params
         }else{
            var pitch = 1.2
 
             for (i in 0 until abs(pith).toInt()) {
                 pitch -= 0.1
                 if(i==abs(pith).toInt()-1){
-                    System.out.println("ewfcewfced ${DecimalFormat("0.00").format(pitch)}")
-                     audioPlayer.playbackParams = PlaybackParams().setPitch(DecimalFormat("0.00").format(pitch).toFloat())
+
+                    val params = PlaybackParams()
+                    params.pitch =DecimalFormat("0.00").format(pitch).toFloat()
+                    audioPlayer.playbackParams = params
+
                 }
 
             }

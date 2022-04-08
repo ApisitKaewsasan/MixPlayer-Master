@@ -42,6 +42,7 @@ class MixPlayer {
 
   MixPlayer({required List<String> urlSong,double? duration=0.0,Function()? onSuccess_}) {
 
+
     this.urlSong = urlSong;
     this.duration = duration;
     playerStateChangedStream.add(PlayerState.ready);
