@@ -174,7 +174,7 @@ class MethodChannelAudioPlayer extends MixAudioPlayerPlatform {
 
   @override
   Future<String?> audioExport(List<String> request,String extension,double reverbConfig,double speedConfig,double panConfig,double pitchConfig,
-      List<double> frequencyConfig,List<double> gainConfig,List<double> panPlayerConfig) async{
+      List<double> frequencyConfig,List<double> gainConfig,List<double> panPlayerConfig,List<double> volumeConfig) async{
     final String? path = await _channel.invokeMethod('audioExport', _invokeMethod(<String, dynamic>{
       'request': request.toList(),
       'extension':extension,
@@ -184,7 +184,8 @@ class MethodChannelAudioPlayer extends MixAudioPlayerPlatform {
       'pitchConfig':pitchConfig,
       'frequencyConfig':frequencyConfig,
       'gainConfig':gainConfig.toList(),
-      'panPlayerConfig':panPlayerConfig.toList()
+      'panPlayerConfig':panPlayerConfig.toList(),
+      'volumeConfig':volumeConfig.toList()
     }));
     return path;
   }

@@ -46,7 +46,6 @@ class MixPlayerPlugin: FlutterPlugin, MethodCallHandler {
   }
 
     private fun setupEventServer(){
-        event["${EVENT_CHANNEL}.procuessRenderToBuffer"] = BetterEventChannel("${EVENT_CHANNEL}.procuessRenderToBuffer",registrar)
         event["${EVENT_CHANNEL}.downLoadTaskStream"] = BetterEventChannel("${EVENT_CHANNEL}.downLoadTaskStream",registrar)
 
     }
@@ -109,14 +108,18 @@ class MixPlayerPlugin: FlutterPlugin, MethodCallHandler {
 
     }else if("setPitch" == call.method){
         player.setPitch((request["pitch"] as Double).toFloat())
+    }else if("setEqualizer" == call.method){
+        player.equaliserService.notifyUpdateBandLevel((request["index"] as Int).toShort(),(request["value"] as Double).toInt())
+    }else if("equaliserReset" == call.method){
+        player.equaliserService.reset()
     }else if(call.method == "downloadTask"){
         DownaloadServices(this,request["request"] as List<String>,context!!)
 
     }else if(call.method == "setModeLoop"){
 
     }else if(call.method == "setPlaybackRate"){
-
-    } else {
+        player.setPlaybackRate(request["rate"] as Double)
+    }else {
       result.notImplemented()
     }
   }
@@ -143,6 +146,7 @@ class MixPlayerPlugin: FlutterPlugin, MethodCallHandler {
 
     //  channel.invokeMethod("onDownLoadTaskStream",gson.toJson(download))
   }
+
 
     fun onPlayerStateChanged(playerId: String, state: AudioPlayerStates) {
         // _channel.invokeMethod("onPlayerStateChanged", arguments: ["playerState":"\(state)"])

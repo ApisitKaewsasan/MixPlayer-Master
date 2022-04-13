@@ -1,37 +1,62 @@
 PODS:
   - AudioStreaming (0.6.0)
+  - ffmpeg-kit-ios-https (4.5.1)
+  - ffmpeg_kit_flutter (4.5.1):
+    - ffmpeg_kit_flutter/https (= 4.5.1)
+    - Flutter
+  - ffmpeg_kit_flutter/https (4.5.1):
+    - ffmpeg-kit-ios-https (= 4.5.1)
+    - Flutter
   - Flutter (1.0.0)
+  - media_info (0.6.1):
+    - Flutter
   - mix_player (0.0.1):
     - AudioStreaming
     - Flutter
     - SwiftTryCatch
   - path_provider_ios (0.0.1):
     - Flutter
+  - permission_handler_apple (9.0.4):
+    - Flutter
   - SwiftTryCatch (0.0.1)
 
 DEPENDENCIES:
+  - ffmpeg_kit_flutter (from `.symlinks/plugins/ffmpeg_kit_flutter/ios`)
   - Flutter (from `Flutter`)
+  - media_info (from `.symlinks/plugins/media_info/ios`)
   - mix_player (from `.symlinks/plugins/mix_player/ios`)
   - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
 
 SPEC REPOS:
   trunk:
     - AudioStreaming
+    - ffmpeg-kit-ios-https
     - SwiftTryCatch
 
 EXTERNAL SOURCES:
+  ffmpeg_kit_flutter:
+    :path: ".symlinks/plugins/ffmpeg_kit_flutter/ios"
   Flutter:
     :path: Flutter
+  media_info:
+    :path: ".symlinks/plugins/media_info/ios"
   mix_player:
     :path: ".symlinks/plugins/mix_player/ios"
   path_provider_ios:
     :path: ".symlinks/plugins/path_provider_ios/ios"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
 
 SPEC CHECKSUMS:
   AudioStreaming: f3605c8459d56fea615ac8b97084c07137247878
+  ffmpeg-kit-ios-https: cec24d405b511e4f274980d8a9c751d384f89558
+  ffmpeg_kit_flutter: e2f0bd6b75e361faeee3b34c70650d3ec6ec35d0
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
+  media_info: 32d75eec667b09571616de41b194abb96670bc22
   mix_player: ed5f5d3696ad189e9d7de1d71c9cc062775c2764
   path_provider_ios: 7d7ce634493af4477d156294792024ec3485acd5
+  permission_handler_apple: 44366e37eaf29454a1e7b1b7d736c2cceaeb17ce
   SwiftTryCatch: fb6d2b34abe48efd69578dac919293a44f95b481
 
 PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c

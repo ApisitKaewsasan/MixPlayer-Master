@@ -65,7 +65,7 @@ abstract class MixAudioPlayerPlatform {
   }
 
   Future<void> setPlaybackRate(double rate) {
-    throw UnimplementedError("pause() has not been implemented.");
+    throw UnimplementedError("setPlaybackRate() has not been implemented.");
   }
 
   Future<void> pause() {
@@ -139,7 +139,7 @@ abstract class MixAudioPlayerPlatform {
   }
 
   Future<String?> audioExport(List<String> request,String extension,double reverbConfig,double speedConfig,double panConfig,double pitchConfig,
-      List<double> frequencyConfig,List<double> gainConfig,List<double> panPlayerConfig) {
+      List<double> frequencyConfig,List<double> gainConfig,List<double> panPlayerConfig,List<double> volumeConfig) {
     throw UnimplementedError("audioExport() has not been implemented.");
   }
 

@@ -10,6 +10,7 @@ import 'package:mix_player/models/PlaybackEventMessage.dart';
 import 'package:mix_player/models/audio_item.dart';
 import 'package:mix_player/models/download_task.dart';
 import 'package:mix_player/models/extension.dart';
+import 'package:mix_player/models/mix_item.dart';
 import 'package:mix_player/models/player_state.dart';
 import 'package:mix_player/player_audio.dart';
 import 'package:mix_player_example/viewmodel/player_data.dart';
@@ -60,7 +61,6 @@ class PlayerController extends GetxController {
    }
 
   setupPlayer() async {
-
    downloadDialog();
    MixService.instance.downLoadTasks(url:  audioItem.urlSong.map((e) => e.url).toList());
     MixService.instance.onDownLoadTask.listen((event) {
@@ -112,29 +112,57 @@ class PlayerController extends GetxController {
 
 
   audioExport(FileExtension extension) async {
+
     if (player!.player.first.playing) {
       togglePlay();
     }
     List<String> urlExport = [];
     List<double> panPlayerConfig = [];
+    List<double> volumeConfig = [];
     for (int i = 0; i < audioItemSubject.value.urlSong.length; i++) {
       if (player!.player[i].isMuse) {
-        urlExport.add(audioItemSubject.value.urlSong[i].url);
+        urlExport.add(audioItemSubject.value.urlSong[i].download!.localUrl!);
         panPlayerConfig.add(player!.player[i].pan);
+        volumeConfig.add(player!.player[i].volume);
       }
     }
 
-    var file = await MixService.instance.audioExport(
-        request: urlExport,
-        extension: extension,
-        reverbConfig: 0.0,
-        speedConfig: player!.speed,
-        panConfig: player!.pan,
-        pitchConfig: player!.pitch,
-        frequencyConfig: MixPlayer.frequecy,
-        gainConfig: player!.frequecy_value,
-        panPlayerConfig: panPlayerConfig);
-    print("export : ${file}");
+
+    MixService.instance.mixAudioFile(mixItem: MixItem(request: urlExport,reverbConfig:  0.0,speedConfig: player!.speed,panConfig: player!.pan,
+        panPlayerConfig:panPlayerConfig,volumeConfig: volumeConfig,frequencyConfig: player!.frequecy_value,gainConfig: player!.frequecy_value,pitchConfig: player!.pitch,extension: extension.name),
+    onSuccess: (outputPath){
+
+    },onBuild: (){
+          procuessRenderDialog();
+        },onError: (message){
+          Get.back();
+          Future.delayed(const Duration(milliseconds: 300), () {
+            Get.defaultDialog(title: "",contentPadding: const EdgeInsets.only(bottom: 20,left: 20,right: 20),titlePadding: EdgeInsets.zero,textCancel: "Close",content: Center(
+              child: Column(
+                children: [
+                  Text("AudioProcuess Error...!",style: GoogleFonts.kanit(color: Colors.black,fontSize: 16)),
+                  const SizedBox(height: 15,),
+                  Text(message,style: GoogleFonts.kanit(color: Colors.black.withOpacity(0.8),fontSize: 14)),
+                ],
+              ),
+            ),onCancel: ()=> Get.back(),titleStyle: GoogleFonts.kanit(color: Colors.black,fontSize: 16));
+
+          });
+
+    });
+
+
+    // var file = await MixService.instance.audioExport(
+    //     request: urlExport,
+    //     extension: extension,
+    //     reverbConfig: 0.0,
+    //     speedConfig: player!.speed,
+    //     panConfig: player!.pan,
+    //     pitchConfig: player!.pitch,
+    //     frequencyConfig: MixPlayer.frequecy,
+    //     gainConfig: player!.frequecy_value,
+    //     panPlayerConfig: panPlayerConfig,volumeConfig: volumeConfig);
+    // print("export : ${file}");
   }
 
   togglePlay() => player!.togglePlay(at: playbackEvent.value.currentTime);
@@ -170,6 +198,7 @@ class PlayerController extends GetxController {
       player!.setSpeed(1.0);
       // player.updateVolume()
     }
+   switchMetronome(status);
   }
 
   goforward({required double time}) => player!.goforward(time: time);
@@ -216,7 +245,7 @@ class PlayerController extends GetxController {
                               "${(snapshot.hasData?snapshot.data!.progress*100:0.0 * 100).toStringAsFixed(1)}%")
                         ],
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 15,
                       ),
                       Align(
@@ -229,7 +258,7 @@ class PlayerController extends GetxController {
                                       .toList());
                               Get.back();
                             },
-                            child: Text("CancelDownload")),
+                            child: const Text("CancelDownload")),
                       )
                     ],
                   );
@@ -264,7 +293,17 @@ class PlayerController extends GetxController {
                       const SizedBox(
                         height: 20,
                       ),
-                      Text("${snapshot.data!.toStringAsFixed(0)}%")
+                      Text("${snapshot.data!.toStringAsFixed(0)}%"),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(onPressed: (){
+                            MixService.instance.sessionRenderCancel();
+                            Get.back();
+
+                          }, child: const Text("Cancel"))
+                        ],
+                      )
                     ],
                   );
                 } else {
@@ -286,15 +325,15 @@ class PlayerController extends GetxController {
         Get.defaultDialog(title: "system error",content: Center(
           child: Column(
             children: [
-              Text("Failed to load file, please try again later",textAlign: TextAlign.center),
-              SizedBox(height: 15,),
+              const Text("Failed to load file, please try again later",textAlign: TextAlign.center),
+              const SizedBox(height: 15,),
               TextButton(
                 onPressed: () { Get.back();  },
-                child: Text("Close"),
+                child: const Text("Close"),
               )
             ],
           ),
-        ),titlePadding: EdgeInsets.only(left: 20,right: 20,top: 20),contentPadding: EdgeInsets.only(top: 20,right: 20,left: 20));
+        ),titlePadding: const EdgeInsets.only(left: 20,right: 20,top: 20),contentPadding: const EdgeInsets.only(top: 20,right: 20,left: 20));
       }
     });
 
@@ -311,11 +350,12 @@ class PlayerController extends GetxController {
   }
 
   exportDialog() {
-    Get.defaultDialog(title: "Export File Type",titlePadding: EdgeInsets.only(top: 20),content: Center(
+    Get.defaultDialog(title: "Export File Type",titlePadding: const EdgeInsets.only(top: 20),content: Center(
       child: ExportFile(onclick: (FileExtension ) {
         Get.back();
-         audioExport(FileExtension);
-         procuessRenderDialog();
+
+        audioExport(FileExtension);
+
       },),
     ),titleStyle: GoogleFonts.kanit(color: Colors.black,fontSize: 18));
   }

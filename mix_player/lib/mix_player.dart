@@ -22,23 +22,33 @@ class MixPlayer {
 
 
 
+  // static List<double> frequecy = [
+  //   32,
+  //   64,
+  //   128,
+  //   250,
+  //   500,
+  //   10000,
+  //   20000,
+  //   40000,
+  //   80000,
+  //   160000
+  // ];
+
   static List<double> frequecy = [
-    32,
-    64,
-    128,
-    250,
-    500,
-    10000,
-    20000,
-    40000,
-    80000,
-    160000
+    60,
+    230,
+    910,
+    3600,
+    14000
   ];
+
   List<double> frequecy_value = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   final playbackEventStream = BehaviorSubject<PlaybackEventMessage>();
   final playerStateChangedStream = BehaviorSubject<PlayerState>();
   final playerErrorMessage = BehaviorSubject<bool>();
+  var count = 10;
 
   MixPlayer({required List<String> urlSong,double? duration=0.0,Function()? onSuccess_}) {
 
@@ -86,8 +96,10 @@ class MixPlayer {
           print("pause ${at}");
         }else if(player[i].playState == PlayerState.paused ){
           print("resume ${at}");
-          player[i].resume(at: at);
+          playerStateChangedStream.add(PlayerState.playing);
+          player[i].resume(at:player.first.playbackEventMessage.currentTime);
         } else {
+          playerStateChangedStream.add(PlayerState.playing);
           player[i].play(at: 0.0);
         }
       }
@@ -192,12 +204,14 @@ class MixPlayer {
   double get pan => player.first.pan;
 
   _subscribeToEvents({required int index,required PlayerAudio playerAudio}){
+
     playerAudio.onPlayerStateChangedStream.listen((event) {
       if(event == PlayerState.complete){
         playerStateChangedStream.add(PlayerState.ready);
         playbackEventStream.add(PlaybackEventMessage(currentTime: 0,duration: this.duration!));
 
       }else{
+
         playerStateChangedStream.add(event);
 
       }
@@ -215,10 +229,15 @@ class MixPlayer {
 
           print("ok player ${i+1} => ${player[i].playbackEventMessage.currentTime}");
 
+          // if((count/player.length)>=10){
+          //   count = 0;
+          //   playerStateChangedStream.add(PlayerState.bufferring);
+          // }
 
 
         }else{
           print("no player ${i+1} => ${player[i].playbackEventMessage.currentTime}");
+
         }
 
         if((i+1)==player.length){
@@ -226,6 +245,7 @@ class MixPlayer {
         }
 
       }
+      count++;
     });
 
   }
