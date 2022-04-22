@@ -44,6 +44,7 @@ class AudioPlayerService:NSObject{
     
     func initData(audioItem:AudioItem){
         self.audioItem = audioItem
+       
       
         self.player.delegate = self
         self.configureAudioSession()
@@ -181,7 +182,7 @@ class AudioPlayerService:NSObject{
     func seek(at time: Double) {
         if(player.state != .error){
             player.seek(to: time)
-            self.reference.playbackEventMessageStream(playerId: self.playerId, currentTime: time, duration:182)
+            self.reference.playbackEventMessageStream(playerId: self.playerId, currentTime: time, duration:self.player.duration)
         }
     }
 
@@ -328,6 +329,7 @@ extension AudioPlayerService : AudioPlayerDelegate{
                 reference.onPlayerStateChanged(playerId: playerId, state: .ready)
             }else if(newState == .error){
                 reference.onPlayerStateChanged(playerId: playerId, state: .error)
+                
             }else if(newState == .bufferring){
                 reference.onPlayerStateChanged(playerId: playerId, state: .bufferring)
             }else if(newState == .disposed){

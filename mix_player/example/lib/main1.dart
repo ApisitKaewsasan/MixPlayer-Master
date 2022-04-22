@@ -11,7 +11,6 @@ import 'package:mix_player/mix_service.dart';
 import 'package:mix_player/models/download_task.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
-
 import 'viewmodel/player_data.dart';
 
 void main() {
@@ -40,23 +39,25 @@ class _MainState extends State<Main> {
 
 
   init() async {
-    // mixService.init().then((value){
-    //   mixService.downLoadTask(request: audioItem.urlSong.map((e) => e.url).toList());
-    //
-    //   //  downloadDialog();
-    //
-    //   mixService.onDownLoadTask.listen((event) {
-    //   //   print("onDownload1 => ${event.progress}");
-    //     onDownLoadTaskSubject.add(event.progress);
-    //   });
-    //
-    // });
 
-    MixService.instance.downLoadTasks(url:  audioItem.urlSong.map((e) => e.url).toList());
+    player = MixPlayer(
+        urlSong: ["/Users/dotsocket/Library/Developer/CoreSimulator/Devices/A8242B0E-6F8D-4550-A809-950F01895462/data/Containers/Data/Application/CD23C778-DA09-46D8-A723-B91FC6A37DCD/Documents/121-521f6020-bfb0-11ec-bcc9-eb858530be26/vocals.mp3","/Users/dotsocket/Library/Developer/CoreSimulator/Devices/A8242B0E-6F8D-4550-A809-950F01895462/data/Containers/Data/Application/CD23C778-DA09-46D8-A723-B91FC6A37DCD/Documents/121-521f6020-bfb0-11ec-bcc9-eb858530be26/vocals.mp3","/Users/dotsocket/Library/Developer/CoreSimulator/Devices/A8242B0E-6F8D-4550-A809-950F01895462/data/Containers/Data/Application/CD23C778-DA09-46D8-A723-B91FC6A37DCD/Documents/121-521f6020-bfb0-11ec-bcc9-eb858530be26/vocals.mp3","/Users/dotsocket/Library/Developer/CoreSimulator/Devices/A8242B0E-6F8D-4550-A809-950F01895462/data/Containers/Data/Application/CD23C778-DA09-46D8-A723-B91FC6A37DCD/Documents/121-521f6020-bfb0-11ec-bcc9-eb858530be26/vocals.mp3","/Users/dotsocket/Library/Developer/CoreSimulator/Devices/A8242B0E-6F8D-4550-A809-950F01895462/data/Containers/Data/Application/CD23C778-DA09-46D8-A723-B91FC6A37DCD/Documents/121-521f6020-bfb0-11ec-bcc9-eb858530be26/vocals.mp3"],
+        duration: 0,
+        onSuccess_: () {
+          // download song from server
+
+          player.togglePlay();
+        });
+
+
+    player.playerStateChangedStream.listen((value) {
+      print("playerStateChangedStream ${value}");
+    });
+    player.playerErrorMessage.listen((value) {
+      print("playerErrorMessage ${value}");
+    });
 
   }
-
-
 
 
 
@@ -64,14 +65,7 @@ class _MainState extends State<Main> {
   Widget build(BuildContext context) {
     init();
     return Center(
-      child:  StreamBuilder<DownLoadTask>(stream: MixService.instance.onDownLoadTask,builder:(context,snapshot){
-          if(snapshot.hasData){
-           // print('${snapshot.data!.requestLoop}/${snapshot.data!.requestUrl.length} procuess => ${snapshot.data!.progress*100}%');
-            return Text("asdsc ${snapshot.data!.progress*100}%");
-          }else{
-            return Text("asdsc ${cdsfc}");
-          }
-      }),
+      child:  Text("ewfced"),
     );
   }
 }

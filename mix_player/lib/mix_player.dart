@@ -4,6 +4,7 @@ import 'dart:ffi';
 import 'package:audio_player_platform_interface/audio_player_platform_interface.dart';
 import 'package:audio_player_platform_interface/models/player_mode.dart';
 import 'package:audio_player_platform_interface/models/request/AudioData.dart';
+import 'package:media_info/media_info.dart';
 import 'package:mix_player/player_audio.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:uuid/uuid.dart';
@@ -19,7 +20,6 @@ class MixPlayer {
   late List<String>? urlSong;
   late double? duration;
   bool modeLoop = false;
-
 
 
   // static List<double> frequecy = [
@@ -47,12 +47,11 @@ class MixPlayer {
 
   final playbackEventStream = BehaviorSubject<PlaybackEventMessage>();
   final playerStateChangedStream = BehaviorSubject<PlayerState>();
-  final playerErrorMessage = BehaviorSubject<bool>();
+  final playerErrorMessage = BehaviorSubject<String>();
   var count = 10;
 
-  MixPlayer({required List<String> urlSong,double? duration=0.0,Function()? onSuccess_}) {
-
-
+  MixPlayer({required List<
+      String> urlSong, double? duration = 0.0, Function()? onSuccess_}) {
     this.urlSong = urlSong;
     this.duration = duration;
     playerStateChangedStream.add(PlayerState.ready);
@@ -68,49 +67,41 @@ class MixPlayer {
               albumimageUrl:
               "https://images.iphonemod.net/wp-content/uploads/2022/01/Apple-Music-got-2nd-place-in-music-streaming-market-cover.jpg",
               url: urlSong[i],
-              isLocalFile: true,frequecy: frequecy,duration: duration!), onSuccess: (){
-
-            if(i == (urlSong.length-1)){
-
-              if(onSuccess_!=null) onSuccess_.call();
-              playbackEventStream.add(PlaybackEventMessage(currentTime: 0,duration: this.duration!));
-            }
+              isLocalFile: true,
+              frequecy: frequecy,
+              duration: duration!), onSuccess: () {
+        if (i == (urlSong.length - 1)) {
+          if (onSuccess_ != null) onSuccess_.call();
+          final MediaInfo _mediaInfo = MediaInfo();
+          try{
+            _mediaInfo.getMediaInfo(player[i].url).then((value) {
+              playbackEventStream.add(
+                  PlaybackEventMessage(currentTime: 0, duration:int.parse(value['durationMs'].toString()).toDouble()/1000));
+            });
+          }catch(e){}
+        }
       });
-      _subscribeToEvents(index: i,playerAudio: player[i]);
-
+      _subscribeToEvents(index: i, playerAudio: player[i]);
     }
-
-
-
-
-
-
   }
 
   togglePlay({double at = 0.0}) {
-
-
-      for (int i=0;i<player.length;i++) {
-        if (player[i].playState == PlayerState.playing) {
-          player[i].pause();
-          print("pause ${at}");
-        }else if(player[i].playState == PlayerState.paused ){
-          print("resume ${at}");
-          playerStateChangedStream.add(PlayerState.playing);
-          player[i].resume(at:player.first.playbackEventMessage.currentTime);
-        } else {
-          playerStateChangedStream.add(PlayerState.playing);
-          player[i].play(at: 0.0);
-        }
+    for (int i = 0; i < player.length; i++) {
+      if (player[i].playState == PlayerState.playing) {
+        player[i].pause();
+        print("pause ${at}");
+      } else if (player[i].playState == PlayerState.paused) {
+        print("resume ${at}");
+        player[i].resume(at: player.first.playbackEventMessage.currentTime);
+      } else {
+        player[i].play(at: 0.0);
       }
-
-
+    }
   }
 
-  reloadPlay(){
-    for (int i=0;i<player.length;i++) {
+  reloadPlay() {
+    for (int i = 0; i < player.length; i++) {
       player[i].reloadPlay();
-
     }
   }
 
@@ -124,15 +115,13 @@ class MixPlayer {
     for (var item in player) {
       item.setStereoBalance(pan);
     }
-
   }
 
-  setModeLoop(bool mode){
+  setModeLoop(bool mode) {
     modeLoop = mode;
     for (var item in player) {
       item.setModeLoop(mode);
     }
-
   }
 
   updateVolume(double volume) {
@@ -142,37 +131,37 @@ class MixPlayer {
   }
 
 
-  goforward({required double time}){
+  goforward({required double time}) {
     for (var item in player) {
       item.goforward(time);
     }
   }
 
-  gobackward({required double time}){
+  gobackward({required double time}) {
     for (var item in player) {
       item.gobackward(time);
     }
   }
 
-  seek({required double position}){
+  seek({required double position}) {
     for (var item in player) {
       item.seek(position: position);
     }
   }
 
-  setSpeed(double speed){
+  setSpeed(double speed) {
     for (var item in player) {
       item.setSpeed(speed);
     }
   }
 
-  setPitch(double pitch){
+  setPitch(double pitch) {
     for (var item in player) {
       item.setPitch(pitch);
     }
   }
 
-  setEqualizer({required int index,required double value}){
+  setEqualizer({required int index, required double value}) {
     for (var item in player) {
       this.frequecy_value[index] = value;
       item.setEqualizer(index: index, value: value);
@@ -180,54 +169,66 @@ class MixPlayer {
   }
 
 
-  equaliserReset(){
+  equaliserReset() {
     frequecy_value = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     for (var item in player) {
       item.equaliserReset();
     }
   }
 
-  playerReset(){
+  playerReset() {
     equaliserReset();
     setPitch(0.0);
     updateVolume(100.0);
     setStereoBalance(0);
     player.forEach((element) {
-      if(!element.isMuse){
-         element.toggleMute();
+      if (!element.isMuse) {
+        element.toggleMute();
       }
     });
   }
 
-  double get pitch  => player.first.pitch;
+  double get pitch => player.first.pitch;
+
   double get speed => player.first.speed;
+
   double get pan => player.first.pan;
 
-  _subscribeToEvents({required int index,required PlayerAudio playerAudio}){
-
+  _subscribeToEvents({required int index, required PlayerAudio playerAudio}) {
+    playerAudio.onErrorPlayerStream.listen((event) {
+        playerErrorMessage.add(event);
+    });
     playerAudio.onPlayerStateChangedStream.listen((event) {
-      if(event == PlayerState.complete){
+      if (event == PlayerState.complete) {
         playerStateChangedStream.add(PlayerState.ready);
-        playbackEventStream.add(PlaybackEventMessage(currentTime: 0,duration: this.duration!));
+        playbackEventStream.add(
+            PlaybackEventMessage(currentTime: 0, duration: this.duration!));
+      } else {
+        if(event != PlayerState.error && event != PlayerState.bufferring && event != PlayerState.playing){
+          playerStateChangedStream.add(event);
+        }else if(player.where((element) => element.playState == PlayerState.error).toList().length == player.length && event == PlayerState.error){
+          playerStateChangedStream.add(event);
+         }else if(player.where((element) => element.playState == PlayerState.bufferring).toList().length == player.length && event == PlayerState.bufferring){
+          playerStateChangedStream.add(event);
+        }else if(player.where((element) => element.playState == PlayerState.playing).toList().length == player.length && event == PlayerState.playing){
+          playerStateChangedStream.add(event);
+        }
 
-      }else{
-
-        playerStateChangedStream.add(event);
 
       }
-
     });
     playerAudio.playbackEventStream.listen((event) {
-
-
-      playbackEventStream.add(PlaybackEventMessage(currentTime: event.currentTime,duration: event.duration > 0.0?event.duration:this.duration!));
-      for(int i =0;i<player.length;i++){
-        if(i==0){
+      playbackEventStream.add(PlaybackEventMessage(
+          currentTime: event.currentTime,
+          duration: event.duration > 0.0 ? event.duration : this.duration!));
+      for (int i = 0; i < player.length; i++) {
+        if (i == 0) {
           print("*************************");
         }
-        if(player.first.playbackEventMessage.currentTime != player[i].playbackEventMessage.currentTime){
-
-          print("ok player ${i+1} => ${player[i].playbackEventMessage.currentTime}");
+        if (player.first.playbackEventMessage.currentTime !=
+            player[i].playbackEventMessage.currentTime) {
+          print("ok player ${i + 1} => ${player[i].playbackEventMessage
+              .currentTime}");
 
           // if((count/player.length)>=10){
           //   count = 0;
@@ -235,19 +236,17 @@ class MixPlayer {
           // }
 
 
-        }else{
-          print("no player ${i+1} => ${player[i].playbackEventMessage.currentTime}");
-
+        } else {
+          print("no player ${i + 1} => ${player[i].playbackEventMessage
+              .currentTime}");
         }
 
-        if((i+1)==player.length){
+        if ((i + 1) == player.length) {
           print("*************************");
         }
-
       }
       count++;
     });
-
   }
 
 

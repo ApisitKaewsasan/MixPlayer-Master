@@ -68,7 +68,7 @@ class PlayerController extends GetxController {
 
         player = MixPlayer(
             urlSong: event.download.map((e) => e.localUrl!).toList(),
-            duration: audioItem.duration,
+            duration: 0,
             onSuccess_: () {
               // download song from server
 
@@ -81,7 +81,7 @@ class PlayerController extends GetxController {
                 player!.setStereoBalance(stereoMetronome.value);
 
               }else{
-                player!.playerErrorMessage.add(true);
+                player!.playerErrorMessage.add("Failed to load file, please try again later");
               }
 
 
@@ -321,11 +321,11 @@ class PlayerController extends GetxController {
       playbackEvent.value = value;
     });
     player!.playerErrorMessage.listen((value) {
-      if(value){
+      if(value.isNotEmpty){
         Get.defaultDialog(title: "system error",content: Center(
           child: Column(
             children: [
-              const Text("Failed to load file, please try again later",textAlign: TextAlign.center),
+               Text(value,textAlign: TextAlign.center),
               const SizedBox(height: 15,),
               TextButton(
                 onPressed: () { Get.back();  },
@@ -405,12 +405,12 @@ class PlayerController extends GetxController {
     if(player!=null && player!.player.isNotEmpty){
       if (item.download != null &&
           item.download!.downloadState == DownloadState.error || item.download!.downloadState == DownloadState.none ||
-          player!.player[key].isMuse == false) {
+          player!.player[key].isMuse) {
 
         return false;
       } else if (item.download != null &&
           item.download!.downloadState == DownloadState.finish ||
-          player!.player[key].isMuse) {
+          player!.player[key].isMuse == false) {
         return true;
       } else {
         return false;

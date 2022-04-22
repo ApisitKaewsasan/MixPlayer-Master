@@ -6,7 +6,6 @@ import androidx.annotation.NonNull
 import androidx.annotation.RequiresApi
 import com.example.mix_player.models.*
 import com.example.mix_player.service.AudioPlayerService
-import com.example.mix_player.service.DownaloadServices
 import com.google.gson.Gson
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
@@ -113,7 +112,7 @@ class MixPlayerPlugin: FlutterPlugin, MethodCallHandler {
     }else if("equaliserReset" == call.method){
         player.equaliserService.reset()
     }else if(call.method == "downloadTask"){
-        DownaloadServices(this,request["request"] as List<String>,context!!)
+       // DownaloadServices(this,request["request"] as List<String>,context!!)
 
     }else if(call.method == "setModeLoop"){
 

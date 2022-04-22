@@ -17,6 +17,7 @@ class PlayerAudio{
   static const _uuid = Uuid();
 
   //
+  late final String url;
   late final String playerId;
   late double volume;
   late PlayerMode mode;
@@ -30,7 +31,7 @@ class PlayerAudio{
 
   // get
   bool playing = false;
-  bool isMuse = true;
+  bool isMuse = false;
   PlayerState playState = PlayerState.none;
   PlaybackEventMessage playbackEventMessage = PlaybackEventMessage(playerId: _uuid.toString(),duration: 0.0,currentTime: 0.0);
 
@@ -47,6 +48,7 @@ class PlayerAudio{
     _initialized = true;
     this.audioItem = audioItem;
     volume = audioItem.volume!;
+    url = audioItem.url;
     _setPlatform(onSuccess);
   }
 

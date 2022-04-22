@@ -137,7 +137,6 @@ class MixService {
         onReceiveProgress: (rcv, total) {
           tempProcuess[i] = (rcv / total) * 100;
           tempDownload[i].progress = tempProcuess[i];
-          tempDownload[i].downloadState = DownloadState.downloading;
           _onDownLoadTaskSubject.add(DownLoadTask(
               requestUrl: url,
               requestLoop: int.parse(
