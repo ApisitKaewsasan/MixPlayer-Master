@@ -117,12 +117,14 @@ class AudioPlayerService:NSObject{
         if(player.state != .error){
             if(audioItem!.isLocalFile){
                 guard let destinationURL = localFilePath(for: URL(string: audioItem!.url!)!) else { return }
-                player.seek(to: at)
+                
                 player.play(url: destinationURL)
+                player.seek(to: at)
                 
             }else{
-                player.seek(to: at)
+                
                 player.play(url: URL(string: audioItem!.url!)!)
+                player.seek(to: at)
                 
             }
         }

@@ -40,22 +40,6 @@ class _MainState extends State<Main> {
 
   init() async {
 
-    player = MixPlayer(
-        urlSong: ["/Users/dotsocket/Library/Developer/CoreSimulator/Devices/A8242B0E-6F8D-4550-A809-950F01895462/data/Containers/Data/Application/CD23C778-DA09-46D8-A723-B91FC6A37DCD/Documents/121-521f6020-bfb0-11ec-bcc9-eb858530be26/vocals.mp3","/Users/dotsocket/Library/Developer/CoreSimulator/Devices/A8242B0E-6F8D-4550-A809-950F01895462/data/Containers/Data/Application/CD23C778-DA09-46D8-A723-B91FC6A37DCD/Documents/121-521f6020-bfb0-11ec-bcc9-eb858530be26/vocals.mp3","/Users/dotsocket/Library/Developer/CoreSimulator/Devices/A8242B0E-6F8D-4550-A809-950F01895462/data/Containers/Data/Application/CD23C778-DA09-46D8-A723-B91FC6A37DCD/Documents/121-521f6020-bfb0-11ec-bcc9-eb858530be26/vocals.mp3","/Users/dotsocket/Library/Developer/CoreSimulator/Devices/A8242B0E-6F8D-4550-A809-950F01895462/data/Containers/Data/Application/CD23C778-DA09-46D8-A723-B91FC6A37DCD/Documents/121-521f6020-bfb0-11ec-bcc9-eb858530be26/vocals.mp3","/Users/dotsocket/Library/Developer/CoreSimulator/Devices/A8242B0E-6F8D-4550-A809-950F01895462/data/Containers/Data/Application/CD23C778-DA09-46D8-A723-B91FC6A37DCD/Documents/121-521f6020-bfb0-11ec-bcc9-eb858530be26/vocals.mp3"],
-        duration: 0,
-        onSuccess_: () {
-          // download song from server
-
-          player.togglePlay();
-        });
-
-
-    player.playerStateChangedStream.listen((value) {
-      print("playerStateChangedStream ${value}");
-    });
-    player.playerErrorMessage.listen((value) {
-      print("playerErrorMessage ${value}");
-    });
 
   }
 

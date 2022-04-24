@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 
 import 'models/audio_item.dart';
 import 'models/player_state.dart';
+import 'models/request_song.dart';
 
 class PlayerAudio{
   static final players = <String, PlayerAudio>{};
@@ -17,7 +18,7 @@ class PlayerAudio{
   static const _uuid = Uuid();
 
   //
-  late final String url;
+  late final RequestSong url;
   late final String playerId;
   late double volume;
   late PlayerMode mode;
@@ -61,7 +62,7 @@ class PlayerAudio{
     _platform = await MixAudioPlatform.instance.init(AudioData(
 
         playerId: playerId,
-        url: audioItem!.url,
+        url: audioItem!.url.url,
         volume: volume,
         title: audioItem!.title,
         albumimageUrl: audioItem!.albumimageUrl,
@@ -76,18 +77,21 @@ class PlayerAudio{
   // get
   play({double at = 0.0}){
     if (checkInstallPlatform()) {
+      playing = true;
       _platform.play(at);
     }
   }
 
   resume({double at = 0.0}){
     if (checkInstallPlatform()) {
+      playing = true;
       _platform.resume(at);
     }
   }
   // post
   pause(){
     if (checkInstallPlatform()) {
+      playing = false;
       _platform.pause();
     }
   }
@@ -100,6 +104,7 @@ class PlayerAudio{
 
   stop(){
     if (checkInstallPlatform()) {
+      playing = false;
       _platform.stop();
     }
   }

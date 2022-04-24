@@ -4,6 +4,7 @@ import 'package:mix_player/mix_service.dart';
 import 'package:mix_player/models/PlaybackEventMessage.dart';
 import 'package:mix_player/models/download_task.dart';
 import 'package:mix_player/models/player_state.dart';
+import 'package:mix_player/models/request_song.dart';
 import 'package:mix_player_example/viewmodel/player_data.dart';
 import 'package:mix_player_example/widget/SeekBar.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
@@ -111,7 +112,7 @@ class Main extends GetView<PlayerController> {
 
   Widget midiTrack({required int key,required PlayerUrl item}) {
 
-    return Padding(
+    return item.icon.isNotEmpty && item.songExtension == SongExtension.Song?Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       child: Row(
         children: [
@@ -128,6 +129,9 @@ class Main extends GetView<PlayerController> {
               item.icon,
               width: 20,
               height: 20,
+              errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace){
+                return Icon(Icons.error,size: 20,);
+              },
             ),
             padding: const EdgeInsets.all(15.0),
             shape: const CircleBorder(),
@@ -156,7 +160,7 @@ class Main extends GetView<PlayerController> {
           }, icon: const Icon(Icons.more_vert))
         ],
       ),
-    );
+    ):SizedBox();
   }
 
   Widget controlPlayer() {

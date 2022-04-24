@@ -34,13 +34,16 @@ class MixService {
       required Function(String) onSuccess,
         required Function() onBuild,
       required Function(String) onError}) async {
-    FileManager.createFolder(extensionFile: mixItem.extension)
-        .then((filemanager) async {
-      if (filemanager.isSuccess) {
-        if (p.extension(mixItem.request.first).split(".")[1] ==
+    // FileManager.createFolder(extensionFile: mixItem.extension)
+    //     .then((filemanager) async {
+      Directory pathCache = await getApplicationDocumentsDirectory();
+      var fileName = "${pathCache.path}/${mixItem.fileName}.${mixItem.extension.toLowerCase()}";
+      if (File(mixItem.request.first).existsSync()) {
+        File(fileName).delete();
+        if (mixItem.request.length>0 && p.extension(mixItem.request.first).split(".")[1] ==
             mixItem.extension.toLowerCase()) {
           onError.call(
-              "Default encoder for format ${filemanager.outputFile.split(".")[1]} (codec ${filemanager.outputFile.split(".")[1]}) is probably disabled. Please choose an encoder manually.");
+              "Default encoder for format ${p.extension(mixItem.request.first.split(".")[1])} (codec ${p.extension(mixItem.request.first.split(".")[1])}) is probably disabled. Please choose an encoder manually.");
         } else {
           final MediaInfo _mediaInfo = MediaInfo();
 
@@ -57,28 +60,23 @@ class MixService {
           mixItem.request.forEach((element) {
             String pan = "pan=stereo|c0=c0|c1=c1";
             if (mixItem.panPlayerConfig[index] > 0) {
-              pan =
-                  "pan=stereo|c0=${(1.0 - (mixItem.panPlayerConfig[index] / 100))}*c0|c1=${mixItem.panPlayerConfig[index] / 100}*c1";
+              pan = "pan=stereo|c0=${(1.0 - (mixItem.panPlayerConfig[index] / 100))}*c0|c1=${mixItem.panPlayerConfig[index] / 100}*c1";
             } else if (mixItem.panPlayerConfig[index] < 0) {
-              pan =
-                  "pan=stereo|c0=${(mixItem.panPlayerConfig[index]).abs() / 100}*c0|c1=${(1.0 - (mixItem.panPlayerConfig[index]).abs() / 100)}*c1";
+              pan = "pan=stereo|c0=${(mixItem.panPlayerConfig[index]).abs() / 100}*c0|c1=${(1.0 - (mixItem.panPlayerConfig[index]).abs() / 100)}*c1";
             }
             if (mixItem.pitchConfig > 0) {
-              atempo =
-                  "asetrate=88200,aresample=44100,atempo=${((0.1 * mixItem.pitchConfig) + 0.5)}";
+              atempo = "asetrate=88200,aresample=44100,atempo=${((0.1 * mixItem.pitchConfig) + 0.5)}";
             } else if (mixItem.pitchConfig < 0) {
-              atempo =
-                  "asetrate=22050,aresample=44100,atempo=${((mixItem.pitchConfig.abs()) * 0.1) + 1.5}";
+              atempo = "asetrate=22050,aresample=44100,atempo=${((mixItem.pitchConfig.abs()) * 0.1) + 1.5}";
             }
             mixPath += " -i ${element}";
-            mixValue +=
-                "[${index}]volume=${((mixItem.volumeConfig[index] / 100) * 4)},${pan},${atempo}[${pathArray[index]}];";
+            mixValue += "[${index}]volume=${((mixItem.volumeConfig[index] / 100) * 4)},${pan},${atempo}[${pathArray[index]}];";
             mixPathEnd += "[${pathArray[index]}]";
             index++;
           });
 
           FFmpegKit.executeAsync(
-              '${mixPath} -filter_complex ${mixValue}${mixPathEnd}amix=inputs=${mixItem.request.length}:duration=longest" ${filemanager.outputFile}',
+              '${mixPath} -filter_complex ${mixValue}${mixPathEnd}amix=inputs=${mixItem.request.length}:duration=longest" ${fileName}',
               (session) async {
 
             final returnCode = await session.getReturnCode();
@@ -86,8 +84,8 @@ class MixService {
             if (ReturnCode.isSuccess(returnCode)) {
               _onProcuessRenderToBufferSubject.add(100.0);
               // SUCCESS
-              print("FFmpegKit -> SUCCESS  outfile -> ${filemanager.outputFile}");
-              onSuccess.call(filemanager.outputFile);
+              print("FFmpegKit -> SUCCESS  outfile -> ${fileName}");
+              onSuccess.call(fileName);
             } else if (ReturnCode.isCancel(returnCode)) {
               _onProcuessRenderToBufferSubject.add(100.0);
               // CANCEL
@@ -108,10 +106,11 @@ class MixService {
 
           });
         }
-      }else{
-        onError.call(filemanager.message);
+     }
+      else{
+        onError.call("request Cannot open file, path ");
       }
-    });
+   // });
   }
 
   sessionRenderCancel()=>FFmpegKit.cancel();

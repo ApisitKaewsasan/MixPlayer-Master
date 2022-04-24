@@ -2,6 +2,7 @@
  import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mix_player/models/download_task.dart';
+import 'package:mix_player/models/request_song.dart';
 
 
 class PlayerData{
@@ -9,6 +10,7 @@ class PlayerData{
   late String artist;
   late List<PlayerUrl> urlSong;
   late double duration;
+
   PlayerData({required this.songName,required this.artist, required this.urlSong,this.duration = 0.0});
  }
 
@@ -16,19 +18,25 @@ class PlayerData{
  class PlayerUrl{
    late String url;
    late String icon;
+   late SongExtension songExtension;
    late Download? download;
+    late String tag;
 
-  PlayerUrl({required this.url,this.download, required this.icon});
+  PlayerUrl({required this.url,this.download, required this.icon,this.songExtension=SongExtension.Song,required this.tag});
  }
 
 
  PlayerData audioItem = PlayerData(songName: "Johnny Knox-I Like You[Demo]",artist: "Artist Name -- Alburm Name",urlSong: [
-   PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/vocals.mp3",icon: "assets/images/png/mic.png",download: Download()),
-   PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/bass.mp3",icon: "assets/images/png/bass.png",download: Download()),
-   PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/drums.mp3",icon: "assets/images/png/drums.png",download: Download()),
-    PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/other.mp3",icon: "assets/images/png/orther.png",download: Download()),
-    PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/piano.mp3",icon: "assets/images/png/piano.png",download: Download())
+   PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/vocals.mp3",icon: "assets/images/png/mic.png",songExtension: SongExtension.Song,tag: "song"),
+   PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/bass.mp3",icon: "assets/images/png/bass.png",songExtension: SongExtension.Song,tag: "song") ,
+   PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/drums.mp3",icon: "assets/images/png/drums.png",songExtension: SongExtension.Song,tag: "song"),
+    PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/other.mp3",icon: "assets/images/png/orther.png",songExtension: SongExtension.Song,tag: "song"),
+    PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/piano.mp3",icon: "assets/images/png/piano.png",songExtension: SongExtension.Song,tag: "song"),
+   PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/drums.mp3",icon: "assets/images/png/drums.png",songExtension: SongExtension.Click,tag: "0.5x"),
+   PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/bass.mp3",icon: "assets/images/png/bass.png",songExtension: SongExtension.Click,tag: "1.0x"),
+   PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/other.mp3",icon: "assets/images/png/other.png",songExtension: SongExtension.Click,tag: "2.0x")
  ],duration: 182.88326530612244);
+
 
  // PlayerData audioItem = PlayerData(songName: "Johnny Knox-I Like You[Demo]",urlSong: [
  //   PlayerUrl(url: "https://cvws.icloud-content.com/B/AfSmYtENmJ1cRgDhDo96qGrMn9A6AXtGqhQuAJY4NtANZwzMmhQWpTn5/vocals.mp3?o=Apy6iP7aUIpBoSjabVD-kvjZGq4qxNr1AXT3o4oW-hRL&v=1&x=3&a=CAogilRMmtiMkCSVTZ_wyMBpPWCrAZrdXlDEraNUE1YWrHMSbRD1jtKL7y8YlYaJjO8vIgEAUgTMn9A6WgQWpTn5aibArfcTAzqR4qKUplTMLqLx0udlldO1zKrKgvoALyhRQFFodvsowXIm7j307vPmdrR3D41SdbXrHnHhhaqSrCRVmEjLmr8En6py7RgRJG0&e=1644729352&fl=&r=de0bab99-a4a3-46a7-81d2-b1082d6fbaa3-1&k=8ZwhVgE1uS3MDxw105UrOw&ckc=com.apple.clouddocs&ckz=com.apple.CloudDocs&p=35&s=XxNa1L1xnCWsADCCKyX_YeBvdK0&cd=i",icon: "assets/images/png/mic.png"),

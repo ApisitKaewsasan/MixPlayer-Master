@@ -12,6 +12,7 @@ import 'package:mix_player/models/download_task.dart';
 import 'package:mix_player/models/extension.dart';
 import 'package:mix_player/models/mix_item.dart';
 import 'package:mix_player/models/player_state.dart';
+import 'package:mix_player/models/request_song.dart';
 import 'package:mix_player/player_audio.dart';
 import 'package:mix_player_example/viewmodel/player_data.dart';
 import 'package:mix_player_example/widget/equalizer_dialog.dart';
@@ -42,7 +43,7 @@ class PlayerController extends GetxController {
 
 
   // metronome ---
-  RxDouble speedMetronome = 1.0.obs;
+  RxString speedMetronome = "1.0x".obs;
   RxDouble volumeMetronome = 100.0.obs;
   RxDouble stereoMetronome = 0.0.obs;
   RxBool switchMetronome = false.obs;
@@ -62,12 +63,29 @@ class PlayerController extends GetxController {
 
   setupPlayer() async {
    downloadDialog();
-   MixService.instance.downLoadTasks(url:  audioItem.urlSong.map((e) => e.url).toList());
+
+   MixService.instance.downLoadTasks(url:  audioItemSubject.value.urlSong.map((e) => e.url).toList());
     MixService.instance.onDownLoadTask.listen((event) {
       if (event.isFinish) {
+        // List<String> tempLocalFile = [];
+        //
+        //
+        // for(int i = 0;i<audioItemSubject.value.clickFile.length;i++){
+        //   tempLocalFile.add(event.download[(event.download.length-1)-i].localUrl!);
+        //
+        // }
+        // for(int i = 0;i<audioItemSubject.value.clickFile.length;i++){
+        //   event.download.removeAt((event.download.length-1));
+        //   audioItemSubject.value.urlSong.removeAt((audioItemSubject.value.urlSong.length-1));
+        // }
+
+
+        for (int i = 0; i < audioItemSubject.value.urlSong.length; i++) {
+          audioItemSubject.value.urlSong[i].download = event.download[i];
+        }
 
         player = MixPlayer(
-            urlSong: event.download.map((e) => e.localUrl!).toList(),
+            urlSong: audioItemSubject.value.urlSong.map((e) => RequestSong(url: e.download!.localUrl!,songExtension: e.songExtension,tag: e.tag)).toList(),
             duration: 0,
             onSuccess_: () {
               // download song from server
@@ -76,7 +94,7 @@ class PlayerController extends GetxController {
 
               if(event.download.where((element) => element.downloadState == DownloadState.finish).toList().isNotEmpty){
                 player!.setModeLoop(false);
-                player!.setSpeed(speedMetronome.value);
+                // player!.setSpeed(speedMetronome.value);
                 player!.updateVolume(volumeMetronome.value);
                 player!.setStereoBalance(stereoMetronome.value);
 
@@ -84,14 +102,14 @@ class PlayerController extends GetxController {
                 player!.playerErrorMessage.add("Failed to load file, please try again later");
               }
 
-
+              speedMetronome.refresh();
             });
 
+        //
+        // player!.ini_clickSound(localPath: tempLocalFile.reversed.toList(),onSuccess_: (){
+        //   print("iniClickSound onSuccess_");
+        // });
 
-        for (int i = 0; i < audioItemSubject.value.urlSong.length; i++) {
-          audioItemSubject.value.urlSong[i].download = event.download[i];
-
-        }
         audioItemSubject.refresh();
         Get.back();
       }
@@ -102,8 +120,6 @@ class PlayerController extends GetxController {
         Get.back();
       }
     });
-
-
 
 
 
@@ -120,16 +136,17 @@ class PlayerController extends GetxController {
     List<double> panPlayerConfig = [];
     List<double> volumeConfig = [];
     for (int i = 0; i < audioItemSubject.value.urlSong.length; i++) {
-      if (player!.player[i].isMuse) {
+     // if (!player!.player[i].isMuse) {
         urlExport.add(audioItemSubject.value.urlSong[i].download!.localUrl!);
         panPlayerConfig.add(player!.player[i].pan);
-        volumeConfig.add(player!.player[i].volume);
-      }
+        volumeConfig.add(player!.player[i].isMuse?0.0:player!.player[i].volume);
+     // }
     }
 
 
+
     MixService.instance.mixAudioFile(mixItem: MixItem(request: urlExport,reverbConfig:  0.0,speedConfig: player!.speed,panConfig: player!.pan,
-        panPlayerConfig:panPlayerConfig,volumeConfig: volumeConfig,frequencyConfig: player!.frequecy_value,gainConfig: player!.frequecy_value,pitchConfig: player!.pitch,extension: extension.name),
+        panPlayerConfig:panPlayerConfig,volumeConfig: volumeConfig,frequencyConfig: player!.frequecy_value,gainConfig: player!.frequecy_value,pitchConfig: player!.pitch,extension: extension.name,fileName: "mix_audio"),
     onSuccess: (outputPath){
 
     },onBuild: (){
@@ -165,7 +182,9 @@ class PlayerController extends GetxController {
     // print("export : ${file}");
   }
 
-  togglePlay() => player!.togglePlay(at: playbackEvent.value.currentTime);
+  togglePlay(){
+    player!.togglePlay(at: playbackEvent.value.currentTime);
+  }
 
   setStereoBalance(double pan) {
     stereoMetronome.value = pan;
@@ -175,7 +194,7 @@ class PlayerController extends GetxController {
   }
 
   setSpeed(double speed) {
-    speedMetronome.value = speed;
+  //  speedMetronome.value = speed;
     if (switchMetronome.value) {
       player!.setSpeed(speed);
     }
@@ -189,15 +208,18 @@ class PlayerController extends GetxController {
   }
 
   setSwitchMetronome({required bool status}) {
+ //   player!.setMetronome(status,speedMetronome.value);
+    player!.updateMetronome(status);
     if (status) {
       player!.setStereoBalance(stereoMetronome.value);
-      player!.setSpeed(speedMetronome.value);
       player!.updateVolume(volumeMetronome.value);
+
     } else {
       player!.setStereoBalance(0);
       player!.setSpeed(1.0);
       // player.updateVolume()
     }
+
    switchMetronome(status);
   }
 
@@ -429,6 +451,16 @@ class PlayerController extends GetxController {
     onInitFirst.listen((p0) {
       setupPlayer();
 
+    });
+    speedMetronome.listen((p0) {
+      player!.setTagMetronome(p0);
+      player!.updateMetronome(switchMetronome.value);
+    });
+    volumeMetronome.listen((p0) {
+      player!.updateVolumeMetronome(p0);
+    });
+    stereoMetronome.listen((p0) {
+      player!.setStereoBalanceMetronome(p0);
     });
 
   }

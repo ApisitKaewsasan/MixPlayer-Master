@@ -54,8 +54,8 @@ class Metronome extends StatelessWidget {
                         showDividers: true,
                         stepSize: 1,
                         onChanged: (dynamic value) {
-                          controller.setVolumeMetronome(value);
 
+                          controller.volumeMetronome.value = value;
                         },
 
                       )
@@ -76,7 +76,7 @@ class Metronome extends StatelessWidget {
                         showDividers: true,
                         stepSize: 0.1,
                         onChanged: (dynamic value) {
-                          controller.setStereoBalance(value);
+                          controller.stereoMetronome.value = value;
                         },
                       )
                     ],
@@ -92,47 +92,55 @@ class Metronome extends StatelessWidget {
                   Row(
                     children: [
                       subdivisionButton(text: "0.5x",onclick: (){
-                        controller.setSpeed(0.5);
-                      }, active: controller.speedMetronome.value == 0.5?true:false),
+                      //  controller.player!.setMetronome(controller.switchMetronome.value, 0);
+                       // controller.player!.setClickSoundSpeed(0.5);
+                        controller.speedMetronome.value = "0.5x";
+                      }, active: controller.speedMetronome.value == "0.5x"?true:false),
                       SizedBox(width: 20,),
                       subdivisionButton(text: "1x",onclick: (){
-                        controller.setSpeed(1.0);
-                      }, active: controller.speedMetronome.value == 1.0?true:false),
+                     //   controller.player!.setMetronome(controller.switchMetronome.value, 1);
+                       // controller.player!.setClickSoundSpeed(1.0);
+                        controller.speedMetronome.value = "1.0x";
+                      }, active: controller.speedMetronome.value == "1.0x"?true:false),
                       SizedBox(width: 20,),
                       subdivisionButton(text: "2x",onclick: (){
-                        controller.setSpeed(2.0);
-                      }, active: controller.speedMetronome.value == 2.0?true:false)
+                      //  controller.player!.setMetronome(controller.switchMetronome.value, 2);
+                      //  controller.player!.setClickSoundSpeed(2.0);
+                        controller.speedMetronome.value = "2.0x";
+                      }, active: controller.speedMetronome.value  == "2.0x"?true:false)
                     ],
                   )
                 ],
               ),
               SizedBox(height: 20,),
               Divider(),
-              SizedBox(height: 20,),
-              Align(child: Text("Allegro",style: GoogleFonts.kanit(fontSize: 16)),alignment: Alignment.centerLeft),
-              Row(
-                children: [
-                  Text("-",style: GoogleFonts.kanit(fontSize: 24)),
-                  Expanded(child: SfSlider(
-                    min: 0,
-                    max: 100,
-                    value: 80,
-                    interval:20,
-                    showTicks: false,
-                    showLabels: false,
-                    enableTooltip: true,
-                    showDividers: true,
-                    stepSize: 1,
-                    onChanged: (dynamic value) {
-
-                    },
-                  )),
-                  Text("+",style: GoogleFonts.kanit(fontSize: 24)),
-                ],
-              ),
+              // SizedBox(height: 20,),
+              // Align(child: Text("Allegro",style: GoogleFonts.kanit(fontSize: 16)),alignment: Alignment.centerLeft),
+              // Row(
+              //   children: [
+              //     Text("-",style: GoogleFonts.kanit(fontSize: 24)),
+              //     Expanded(child: SfSlider(
+              //       min: 0,
+              //       max: 100,
+              //       value: 80,
+              //       interval:20,
+              //       showTicks: false,
+              //       showLabels: false,
+              //       enableTooltip: true,
+              //       showDividers: true,
+              //       stepSize: 1,
+              //       onChanged: (dynamic value) {
+              //
+              //       },
+              //     )),
+              //     Text("+",style: GoogleFonts.kanit(fontSize: 24)),
+              //   ],
+              // ),
               SizedBox(height: 20,),
               TextButton(onPressed: (){
-
+                controller.stereoMetronome.value = 0;
+                controller.volumeMetronome.value = 100.0;
+                controller.speedMetronome.value = "1.0x";
               }, child: Text("Reset",style: GoogleFonts.kanit())),
               SizedBox(height: 30,),
               Row(

@@ -1,6 +1,8 @@
 
+import 'request_song.dart';
+
 class AudioItem{
-  final String url;
+  final RequestSong url;
   final String title;
   final String albumTitle;
   final String artist;
