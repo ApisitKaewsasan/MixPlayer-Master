@@ -68,7 +68,7 @@ class PlayerAudio{
         albumimageUrl: audioItem!.albumimageUrl,
         artist: audioItem!.artist,
         albumTitle: audioItem!.albumTitle,
-        skipInterval: audioItem!.skipInterval!, frequecy: audioItem!.frequecy!, enable_equalizer: audioItem!.enable_equalizer!,isLocalFile: audioItem!.isLocalFile));
+        skipInterval: audioItem!.skipInterval!, frequecy: audioItem!.frequecy!, enable_equalizer: audioItem!.enable_equalizer!,isLocalFile: audioItem!.isLocalFile,speed: audioItem!.speed,pitch: audioItem!.pitch,pan: audioItem!.pan));
     _subscribeToEvents(_platform);
 
     onSuccess();
@@ -200,19 +200,21 @@ class PlayerAudio{
   //  close player
   disposePlayer() {
     if (checkInstallPlatform()) {
+
       _initialized = false;
       _platform.disposePlayer();
-      _eventSubject.close();
-      _errorSubject.close();
-      _playerStateChangedSubject.close();
+      // _eventSubject.close();
+      // _errorSubject.close();
+      // _playerStateChangedSubject.close();
     }
   }
 
   _subscribeToEvents(MixAudioPlayerPlatform platform) {
     platform.playbackEventMessageStream.listen((event) {
       playbackEventMessage = event;
-      _eventSubject.add(PlaybackEventMessage(playerId: event.playerId,duration: event.duration,currentTime: event.currentTime));
-
+      if(_eventSubject!=null){
+        _eventSubject.add(PlaybackEventMessage(playerId: event.playerId,duration: event.duration,currentTime: event.currentTime));
+      }
 
     });
     platform.onErrorPlayerStream.listen((event) {

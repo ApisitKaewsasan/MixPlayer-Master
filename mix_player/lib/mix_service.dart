@@ -124,6 +124,16 @@ class MixService {
         url.length, (index) => Download(progress: 0.0, url: url[index]));
     var loopSuccess = 0;
 
+    _onDownLoadTaskSubject.add(DownLoadTask(
+        requestUrl: url,
+        requestLoop: int.parse(
+            ((tempProcuess.sum / url.length) / (100 / url.length))
+                .ceilToDouble()
+                .toStringAsFixed(0)),
+        progress: ((tempProcuess.sum / url.length) / 100),
+        isFinish: false,
+        download: tempDownload));
+
     for (var i = 0; i < url.length; i++) {
       String savePath = await getFilePath(url[i].split("/").last);
       FileManager.deleteFile(savePath);

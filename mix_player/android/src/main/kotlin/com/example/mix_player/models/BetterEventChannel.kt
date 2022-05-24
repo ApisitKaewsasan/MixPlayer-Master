@@ -6,13 +6,13 @@ import io.flutter.plugin.common.EventChannel
 class BetterEventChannel(name:String,message: FlutterPlugin.FlutterPluginBinding) :
     EventChannel.StreamHandler {
     var eventChannel: EventChannel = EventChannel(message.binaryMessenger, name)
-    lateinit var eventSink:EventChannel.EventSink
+     var eventSink:EventChannel.EventSink? = null
     init {
         eventChannel.setStreamHandler(this)
     }
 
     fun sendEvent(arguments:Any?){
-        eventSink.success(arguments)
+        eventSink!!.success(arguments)
     }
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
@@ -21,7 +21,7 @@ class BetterEventChannel(name:String,message: FlutterPlugin.FlutterPluginBinding
     }
 
     override fun onCancel(arguments: Any?) {
-        eventSink.endOfStream()
+        eventSink!!.endOfStream()
         return
     }
 }

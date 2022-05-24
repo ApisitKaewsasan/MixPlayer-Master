@@ -1,6 +1,3 @@
-import 'dart:async';
-import 'dart:ffi';
-
 import 'package:audio_player_platform_interface/audio_player_platform_interface.dart';
 import 'package:audio_player_platform_interface/models/player_mode.dart';
 import 'package:audio_player_platform_interface/models/request/AudioData.dart';
@@ -20,7 +17,7 @@ class MixPlayer {
   List<PlayerAudio> player = <PlayerAudio>[];
   List<RequestSong> metronomeSound = <RequestSong>[];
   late List<RequestSong>? urlSong;
-  late double? duration;
+   double duration = 0;
   bool modeLoop = false;
   bool metronome = false;
   double _metronomeVolumeTemp = 100;
@@ -48,10 +45,10 @@ class MixPlayer {
   final playerStateChangedStream = BehaviorSubject<PlayerState>();
   final playerErrorMessage = BehaviorSubject<String>();
 
-  MixPlayer(
-      {required List<RequestSong> urlSong,
-      double? duration = 0.0,
-      Function()? onSuccess_}) {
+  MixPlayer({required List<RequestSong> urlSong,
+    Function()? onSuccess_}) {
+    playerStateChangedStream.add(PlayerState.bufferring);
+
     this.urlSong = urlSong;
     this.metronomeSound = urlSong
         .asMap()
@@ -59,7 +56,7 @@ class MixPlayer {
         .values
         .toList();
     this.duration = duration;
-    playerStateChangedStream.add(PlayerState.ready);
+
 
     for (int i = 0; i < urlSong.length; i++) {
       player.add(PlayerAudio());
@@ -70,11 +67,14 @@ class MixPlayer {
               albumTitle: "refvrecf",
               artist: "wefcerscf",
               albumimageUrl:
-                  "https://images.iphonemod.net/wp-content/uploads/2022/01/Apple-Music-got-2nd-place-in-music-streaming-market-cover.jpg",
+              "https://images.iphonemod.net/wp-content/uploads/2022/01/Apple-Music-got-2nd-place-in-music-streaming-market-cover.jpg",
               url: urlSong[i],
               isLocalFile: true,
               frequecy: frequecy,
-              duration: duration!),
+              speed: urlSong[i].speed,
+              pan: urlSong[i].pan,
+              pitch: urlSong[i].pitch,
+              duration: urlSong[i].duration),
           onSuccess: () {
             if (i == (urlSong.length - 1)) {
               if (onSuccess_ != null) onSuccess_.call();
@@ -84,20 +84,41 @@ class MixPlayer {
                   playbackEventStream.add(PlaybackEventMessage(
                       currentTime: 0,
                       duration:
-                          int.parse(value['durationMs'].toString()).toDouble() /
-                              1000));
+                      int.parse(value['durationMs'].toString()).toDouble() /
+                          1000));
                   this.duration =
                       int.parse(value['durationMs'].toString()).toDouble() /
                           1000;
                 });
               } catch (e) {}
+              // player[0].setPitch(0);
             }
           });
       _subscribeToEvents(index: i, playerAudio: player[i]);
     }
+    playerStateChangedStream.add(PlayerState.ready);
+
   }
 
-  setTagMetronome(String tag) => metronomeTag = tag;
+ // setTagMetronome(String tag) => metronomeTag = tag;
+
+  // updateMetronome(bool metronome) {
+  //   this.metronome = metronome;
+  //   player.forEach((element) {
+  //     if (!metronome && element.url.songExtension == SongExtension.Click) {
+  //       print("index 1 => ${element.url.tag}  ${element.url.songExtension}");
+  //       element.updateVolume(0);
+  //     } else if (metronome &&
+  //         element.url.songExtension == SongExtension.Click) {
+  //       print("index 2 => ${element.url.tag}  ${element.url.songExtension}");
+  //       if (element.url.tag == metronomeTag) {
+  //         element.updateVolume(_metronomeVolumeTemp);
+  //       } else {
+  //         element.updateVolume(0);
+  //       }
+  //     }
+  //   });
+  // }
 
   updateMetronome(bool metronome) {
     this.metronome = metronome;
@@ -109,7 +130,7 @@ class MixPlayer {
           element.url.songExtension == SongExtension.Click) {
         print("index 2 => ${element.url.tag}  ${element.url.songExtension}");
         if (element.url.tag == metronomeTag) {
-          element.updateVolume(_metronomeVolumeTemp);
+
         } else {
           element.updateVolume(0);
         }
@@ -125,11 +146,9 @@ class MixPlayer {
       } else if (player[i].playState == PlayerState.paused) {
         player[i].playState = PlayerState.playing;
         player[i].resume(at: player.first.playbackEventMessage.currentTime);
-
       } else {
         player[i].playState = PlayerState.playing;
         player[i].play(at: 0.0);
-
       }
     }
     updateMetronome(metronome);
@@ -159,23 +178,25 @@ class MixPlayer {
   setStereoBalance(double pan) {
     for (var item in player) {
       if (item.url.songExtension == SongExtension.Song) {
-        item.setStereoBalance(pan);
+
       }
+      item.setStereoBalance(pan);
     }
   }
 
-  setModeLoop(bool mode) {
-    modeLoop = mode;
-    for (var item in player) {
-      item.setModeLoop(mode);
-    }
-  }
+  // setModeLoop(bool mode) {
+  //   modeLoop = mode;
+  //   for (var item in player) {
+  //     item.setModeLoop(mode);
+  //   }
+  // }
 
   updateVolume(double volume) {
     for (var item in player) {
-      if (item.url.songExtension == SongExtension.Song) {
-        item.updateVolume(volume);
-      }
+      // if (item.url.songExtension == SongExtension.Song) {
+      //
+      // }
+      item.updateVolume(volume);
     }
   }
 
@@ -247,7 +268,7 @@ class MixPlayer {
   playerReset() {
     equaliserReset();
     setPitch(0.0);
-    updateVolume(100.0);
+    updateVolume(80.0);
     setStereoBalance(0);
     player.forEach((element) {
       if (element.url.songExtension == SongExtension.Song) {
@@ -255,6 +276,12 @@ class MixPlayer {
           element.toggleMute();
         }
       }
+    });
+  }
+
+  disposePlayer() {
+    player.forEach((element) {
+      element.disposePlayer();
     });
   }
 
@@ -270,20 +297,20 @@ class MixPlayer {
 
   _subscribeToEvents({required int index, required PlayerAudio playerAudio}) {
     playerAudio.onErrorPlayerStream.listen((event) {
-      playerErrorMessage.add(event);
+      print("onErrorPlayerStream ${event}");
     });
     playerAudio.onPlayerStateChangedStream.listen((event) {
       if (event == PlayerState.complete) {
         if (player
-                    .where(
-                        (element) => element.playState == PlayerState.complete)
-                    .toList()
-                    .length ==
-                player.length &&
+            .where(
+                (element) => element.playState == PlayerState.complete)
+            .toList()
+            .length ==
+            player.length &&
             event == PlayerState.complete) {
           playerStateChangedStream.add(PlayerState.ready);
           playbackEventStream.add(
-              PlaybackEventMessage(currentTime: 0, duration: this.duration!));
+              PlaybackEventMessage(currentTime: 0, duration: this.duration));
         }
       } else {
         if (event != PlayerState.error &&
@@ -291,26 +318,26 @@ class MixPlayer {
             event != PlayerState.playing) {
           playerStateChangedStream.add(event);
         } else if (player
-                    .where((element) => element.playState == PlayerState.error)
-                    .toList()
-                    .length ==
-                player.length &&
+            .where((element) => element.playState == PlayerState.error)
+            .toList()
+            .length ==
+            player.length &&
             event == PlayerState.error) {
           playerStateChangedStream.add(event);
         } else if (player
-                    .where((element) =>
-                        element.playState == PlayerState.bufferring)
-                    .toList()
-                    .length ==
-                player.length &&
+            .where((element) =>
+        element.playState == PlayerState.bufferring)
+            .toList()
+            .length ==
+            player.length &&
             event == PlayerState.bufferring) {
           playerStateChangedStream.add(event);
         } else if (player
-                    .where(
-                        (element) => element.playState == PlayerState.playing)
-                    .toList()
-                    .length ==
-                player.length &&
+            .where(
+                (element) => element.playState == PlayerState.playing)
+            .toList()
+            .length ==
+            player.length &&
             event == PlayerState.playing) {
           playerStateChangedStream.add(event);
         }
@@ -320,7 +347,7 @@ class MixPlayer {
     playerAudio.playbackEventStream.listen((event) {
       playbackEventStream.add(PlaybackEventMessage(
           currentTime: event.currentTime,
-          duration: event.duration > 0.0 ? event.duration : this.duration!));
+          duration: event.duration > 0.0 ? event.duration : this.duration));
       for (int i = 0; i < player.length; i++) {
         if (i == 0) {
           print("*************************");
@@ -328,12 +355,12 @@ class MixPlayer {
         if (player.first.playbackEventMessage.currentTime !=
             player[i].playbackEventMessage.currentTime) {
           print(
-              "ok player ${i + 1}  => ${player[i].playbackEventMessage.currentTime}");
-
-
+              "ok player ${i + 1}  => ${player[i].playbackEventMessage
+                  .currentTime}");
         } else {
           print(
-              "no player ${i + 1} => ${player[i].playbackEventMessage.currentTime}");
+              "no player ${i + 1} => ${player[i].playbackEventMessage
+                  .currentTime}");
         }
 
         if ((i + 1) == player.length) {

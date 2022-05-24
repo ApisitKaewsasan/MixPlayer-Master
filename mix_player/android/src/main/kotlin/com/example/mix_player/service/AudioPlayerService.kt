@@ -7,11 +7,13 @@ import android.media.VolumeShaper
 import android.media.audiofx.Equalizer
 import android.os.Build
 import android.os.Handler
+import android.os.Looper
 import androidx.annotation.RequiresApi
 import com.example.mix_player.MixPlayerPlugin
 import com.example.mix_player.models.AudioItem
 import com.example.mix_player.models.AudioPlayerStates
 import com.example.mix_player.viewmodel.EqualizerViewModel
+import java.io.IOException
 import java.text.DecimalFormat
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
@@ -26,7 +28,7 @@ class AudioPlayerService(
 
 
     lateinit var audioItem: AudioItem
-    lateinit var audioPlayer: MediaPlayer
+    var audioPlayer: MediaPlayer? = null
     var leftVolume: Float = 1F
     var rightVolume: Float = 1F
 
@@ -41,54 +43,70 @@ class AudioPlayerService(
         this.audioItem = audioItem
 
         setupPlayer()
-        equaliserService = EqualizerViewModel(Equalizer(0,audioPlayer.audioSessionId))
-      //  setupEqualizer()
+        //  equaliserService = EqualizerViewModel(Equalizer(0,audioPlayer.audioSessionId))
+        //  setupEqualizer()
     }
 
     private fun setupPlayer() {
         audioPlayer = MediaPlayer()
-        audioPlayer.setDataSource(this.audioItem.url)
-        audioPlayer.prepare()
-        audioPlayer.setOnPreparedListener {
+        try {
 
-        }
-        audioPlayer.seekTo(0)
-        audioPlayer.setOnCompletionListener {
-            seek(0)
-            playerStateChanged(AudioPlayerStates.ready)
-        }
 
+            audioPlayer!!.setDataSource(this.audioItem.url)
+            audioPlayer!!.prepare()
+            audioPlayer!!.setOnPreparedListener {
+                //
+
+
+                updateVolume(audioItem.volume.toFloat())
+                setPan(audioItem.pan.toFloat() / 100)
+//                setPitch(audioItem.pitch.toFloat())
+               // audioPlayer!!.pause()
+
+            }
+
+            audioPlayer!!.setOnCompletionListener {
+                seek(0)
+                playerStateChanged(AudioPlayerStates.ready)
+          }
+        } catch (e: IOException) {
+            e.printStackTrace()
+            System.out.println("error xxx ${e.message}")
+        }
 
     }
 
 
-    fun setupEqualizer(){
-        mEqualizer = Equalizer(0,audioPlayer.audioSessionId)
+    fun setupEqualizer() {
+        mEqualizer = Equalizer(0, audioPlayer!!.audioSessionId)
         val numberOfBands = mEqualizer!!.numberOfBands
-        var minEQLevel =  mEqualizer!!.bandLevelRange[0]
-        var maxEQLevel =  mEqualizer!!.bandLevelRange[1]
-       // mEqualizer!!.setBandLevel(bands, (5+minEQLevel).toShort())
+        var minEQLevel = mEqualizer!!.bandLevelRange[0]
+        var maxEQLevel = mEqualizer!!.bandLevelRange[1]
+        // mEqualizer!!.setBandLevel(bands, (5+minEQLevel).toShort())
 
         for (i in 0 until numberOfBands) {
-            System.out.println("centerFreq -> ${mEqualizer!!.getCenterFreq(i.toShort())/1000}")
+            System.out.println("centerFreq -> ${mEqualizer!!.getCenterFreq(i.toShort()) / 1000}")
         }
 
     }
 
     private fun changeSeekBar() {
-        if (statePlayer == AudioPlayerStates.playing) {
-            runnable = Runnable {
-                changeSeekBar()
-                if (audioPlayer.currentPosition <= audioPlayer.duration) {
-                    reference.playbackEventMessageStream(
-                        playerId,
-                        audioPlayer.currentPosition.toLong(),
-                        audioPlayer.duration.toLong()
-                    )
+        if (audioPlayer != null) {
+            if (statePlayer == AudioPlayerStates.playing) {
+                runnable = Runnable {
+                    changeSeekBar()
+                    if (audioPlayer != null && audioPlayer!!.currentPosition <= audioPlayer!!.duration) {
+                        reference.playbackEventMessageStream(
+                            playerId,
+                            audioPlayer!!.currentPosition.toLong(),
+                            audioPlayer!!.duration.toLong()
+                        )
+                    }
                 }
+                handler.postDelayed(runnable!!, 1000)
             }
-            handler.postDelayed(runnable!!, 1000)
         }
+
     }
 
 
@@ -96,9 +114,12 @@ class AudioPlayerService(
     fun play(at: Double) {
         playerStateChanged(AudioPlayerStates.playing)
         changeSeekBar()
-        audioPlayer.start()
+       // audioPlayer!!.start()
+        audioPlayer!!.playbackParams = PlaybackParams().setSpeed(audioItem.speed.toFloat())
+        setPitch(audioItem.pitch.toFloat())
+        audioPlayer!!.seekTo(0)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            fadeInOrOutAudio(audioPlayer, 1000, false)
+            fadeInOrOutAudio(audioPlayer!!, 1000, false)
         }
     }
 
@@ -106,9 +127,9 @@ class AudioPlayerService(
         if (statePlayer == AudioPlayerStates.paused) {
             playerStateChanged(AudioPlayerStates.playing)
             changeSeekBar()
-            audioPlayer.start()
+            audioPlayer!!.start()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                fadeInOrOutAudio(audioPlayer, 1000, false)
+                fadeInOrOutAudio(audioPlayer!!, 1000, false)
             }
         }
     }
@@ -117,7 +138,7 @@ class AudioPlayerService(
     fun pause() {
         if (statePlayer == AudioPlayerStates.playing) {
             playerStateChanged(AudioPlayerStates.paused)
-            audioPlayer.pause()
+            audioPlayer!!.pause()
         }
     }
 
@@ -157,13 +178,16 @@ class AudioPlayerService(
 
     fun stop() {
         if (statePlayer == AudioPlayerStates.playing) {
-            audioPlayer.stop()
+            audioPlayer!!.stop()
+            runnable?.let { handler.removeCallbacks(it) };
         }
     }
 
     fun setPlaybackRate(rate: Double) {
+        System.out.println("setPlaybackRate xxx 1 ${rate}")
         if (statePlayer == AudioPlayerStates.paused || statePlayer == AudioPlayerStates.playing) {
-            audioPlayer.playbackParams = PlaybackParams().setSpeed(rate.toFloat())
+            System.out.println("setPlaybackRate xxx 2 ${rate}")
+            audioPlayer!!.playbackParams = PlaybackParams().setSpeed(rate.toFloat())
         }
     }
 
@@ -171,7 +195,7 @@ class AudioPlayerService(
         if (statePlayer == AudioPlayerStates.paused || statePlayer == AudioPlayerStates.playing) {
             // if(player.state != .error && player.state != .bufferring){
             val increase = (TimeUnit.SECONDS.convert(
-                audioPlayer.currentPosition.toLong(),
+                audioPlayer!!.currentPosition.toLong(),
                 TimeUnit.MILLISECONDS
             )) - time.toInt()
             if (increase < 0) {
@@ -187,22 +211,22 @@ class AudioPlayerService(
     fun skipForward(time: Double) {
         if (statePlayer == AudioPlayerStates.paused || statePlayer == AudioPlayerStates.playing) {
             val increase = (TimeUnit.SECONDS.convert(
-                audioPlayer.currentPosition.toLong(),
+                audioPlayer!!.currentPosition.toLong(),
                 TimeUnit.MILLISECONDS
             )) + time.toInt()
-            if (increase > audioPlayer.duration) {
-            } else if (increase < audioPlayer.duration) {
+            if (increase > audioPlayer!!.duration) {
+            } else if (increase < audioPlayer!!.duration) {
                 seek(TimeUnit.MILLISECONDS.convert(increase, TimeUnit.SECONDS).toInt())
             }
         }
     }
 
     fun seek(time: Int) {
-        audioPlayer.seekTo(time)
+        audioPlayer!!.seekTo(time)
         reference.playbackEventMessageStream(
             playerId,
-            audioPlayer.currentPosition.toLong(),
-            audioPlayer.duration.toLong()
+            audioPlayer!!.currentPosition.toLong(),
+            audioPlayer!!.duration.toLong()
         )
     }
 
@@ -211,12 +235,26 @@ class AudioPlayerService(
         reference.onPlayerStateChanged(playerId, state)
     }
 
+    fun onDestroy() {
+        System.out.println("onDestroy ${playerId}")
+        // playerStateChanged(AudioPlayerStates.stopped)
+        if (statePlayer == AudioPlayerStates.playing) {
+            audioPlayer!!.stop()
+            audioPlayer!!.release()
+        }
+
+        audioPlayer = null
+        runnable?.let { handler.removeCallbacks(it) }
+
+
+    }
+
 
     fun updateVolume(volume: Float) {
         leftVolume = volume
         rightVolume = volume
         if (isMute) {
-            audioPlayer.setVolume(leftVolume, rightVolume)
+            audioPlayer!!.setVolume(leftVolume, rightVolume)
         }
     }
 
@@ -233,7 +271,7 @@ class AudioPlayerService(
             leftVolume = abs(pan + 1.0).toFloat()
         }
         if (isMute) {
-            audioPlayer.setVolume(leftVolume, rightVolume)
+            audioPlayer!!.setVolume(leftVolume, rightVolume)
         }
 
     }
@@ -241,10 +279,10 @@ class AudioPlayerService(
     fun toggleMute() {
         if (isMute) {
             isMute = false
-            audioPlayer.setVolume(0F, 0F)
+            audioPlayer!!.setVolume(0F, 0F)
         } else {
             isMute = true
-            audioPlayer.setVolume(leftVolume, rightVolume)
+            audioPlayer!!.setVolume(leftVolume, rightVolume)
         }
 
     }
@@ -253,11 +291,11 @@ class AudioPlayerService(
         if (pith == 0.0F) {
             val params = PlaybackParams()
             params.pitch = 1.0F
-            audioPlayer.playbackParams = params
+            audioPlayer!!.playbackParams = params
         } else if (pith >= 1.0) {
             val params = PlaybackParams()
             params.pitch = pith
-            audioPlayer.playbackParams = params
+            audioPlayer!!.playbackParams = params
         } else {
             var pitch = 1.2
             for (i in 0 until abs(pith).toInt()) {
@@ -266,13 +304,13 @@ class AudioPlayerService(
 
                     val params = PlaybackParams()
                     params.pitch = DecimalFormat("0.00").format(pitch).toFloat()
-                    audioPlayer.playbackParams = params
+                    audioPlayer!!.playbackParams = params
                 }
             }
         }
 
         if (statePlayer == AudioPlayerStates.paused || statePlayer == AudioPlayerStates.ready) {
-            audioPlayer.pause()
+            audioPlayer!!.pause()
         }
     }
 }

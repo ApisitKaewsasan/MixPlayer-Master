@@ -11,5 +11,9 @@ class AudioItem(
     var volume: Double = 0.0,
     var enable_equalizer: Boolean = false,
     var frequecy: List<Int>,
-    var isLocalFile: Boolean = false
+    var isLocalFile: Boolean = false,
+    var speed : Double = 1.0,
+    var pitch : Double = 0.0,
+    var pan : Double = 0.0,
+
 )

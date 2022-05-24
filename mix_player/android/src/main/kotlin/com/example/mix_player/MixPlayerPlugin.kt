@@ -57,7 +57,7 @@ class MixPlayerPlugin: FlutterPlugin, MethodCallHandler {
       return
     }
 
-    var playerId = if (request["playerId"]!=null) request["playerId"] as String else {
+    var playerId = if (request?.get("playerId") !=null) request["playerId"] as String else {
       result.error("error","Call missing mandatory parameter playerId.",null)
       return
     }
@@ -74,7 +74,7 @@ class MixPlayerPlugin: FlutterPlugin, MethodCallHandler {
                 playerId,request["title"] as String,request["albumTitle"] as String,request["artist"] as String,
                 request["albumimageUrl"] as String,request["skipInterval"] as Double,request["url"] as String,
                 request["volume"] as Double,request["enable_equalizer"] as Boolean,request["frequecy"] as List<Int>,
-                request["isLocalFile"] as Boolean
+                request["isLocalFile"] as Boolean,request["speed"] as Double,request["pitch"] as Double,request["pan"] as Double
             ))
       //  System.out.println("43r43r4354r");
 
@@ -118,6 +118,11 @@ class MixPlayerPlugin: FlutterPlugin, MethodCallHandler {
 
     }else if(call.method == "setPlaybackRate"){
         player.setPlaybackRate(request["rate"] as Double)
+    }else if(call.method == "disposePlayer"){
+        player.onDestroy()
+        players.remove(playerId)
+
+        System.out.println("player ${players.size}")
     }else {
       result.notImplemented()
     }

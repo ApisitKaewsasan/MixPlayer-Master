@@ -27,14 +27,11 @@ class PlayerData{
 
 
  PlayerData audioItem = PlayerData(songName: "Johnny Knox-I Like You[Demo]",artist: "Artist Name -- Alburm Name",urlSong: [
-   PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/vocals.mp3",icon: "assets/images/png/mic.png",songExtension: SongExtension.Song,tag: "song"),
-   PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/bass.mp3",icon: "assets/images/png/bass.png",songExtension: SongExtension.Song,tag: "song") ,
-   PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/drums.mp3",icon: "assets/images/png/drums.png",songExtension: SongExtension.Song,tag: "song"),
-    PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/other.mp3",icon: "assets/images/png/orther.png",songExtension: SongExtension.Song,tag: "song"),
-    PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/piano.mp3",icon: "assets/images/png/piano.png",songExtension: SongExtension.Song,tag: "song"),
-   PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/drums.mp3",icon: "assets/images/png/drums.png",songExtension: SongExtension.Click,tag: "0.5x"),
-   PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/bass.mp3",icon: "assets/images/png/bass.png",songExtension: SongExtension.Click,tag: "1.0x"),
-   PlayerUrl(url: "https://dev-api.muse.in.th/api/v1/files/songtest/other.mp3",icon: "assets/images/png/other.png",songExtension: SongExtension.Click,tag: "2.0x")
+   PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/songtest/vocals.mp3",icon: "assets/images/png/mic.png",songExtension: SongExtension.Song,tag: "song"),
+   PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/songtest/bass.mp3",icon: "assets/images/png/bass.png",songExtension: SongExtension.Song,tag: "song") ,
+   PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/songtest/drums.mp3",icon: "assets/images/png/drums.png",songExtension: SongExtension.Song,tag: "song"),
+    PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/songtest/other.mp3",icon: "assets/images/png/orther.png",songExtension: SongExtension.Song,tag: "song"),
+    PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/songtest/piano.mp3",icon: "assets/images/png/piano.png",songExtension: SongExtension.Song,tag: "song")
  ],duration: 182.88326530612244);
 
 

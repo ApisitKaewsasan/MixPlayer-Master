@@ -47,6 +47,7 @@ class PlayerController extends GetxController {
   RxDouble volumeMetronome = 100.0.obs;
   RxDouble stereoMetronome = 0.0.obs;
   RxBool switchMetronome = false.obs;
+   DownLoadTask downLoadTask = DownLoadTask(download: [],progress: 0,isFinish: false,requestLoop: 0,requestUrl: []);
 
   RxList<FrequencyModel> frequecy_item = List.generate(
       MixPlayer.frequecy.length,
@@ -66,51 +67,8 @@ class PlayerController extends GetxController {
 
    MixService.instance.downLoadTasks(url:  audioItemSubject.value.urlSong.map((e) => e.url).toList());
     MixService.instance.onDownLoadTask.listen((event) {
-      if (event.isFinish) {
-        // List<String> tempLocalFile = [];
-        //
-        //
-        // for(int i = 0;i<audioItemSubject.value.clickFile.length;i++){
-        //   tempLocalFile.add(event.download[(event.download.length-1)-i].localUrl!);
-        //
-        // }
-        // for(int i = 0;i<audioItemSubject.value.clickFile.length;i++){
-        //   event.download.removeAt((event.download.length-1));
-        //   audioItemSubject.value.urlSong.removeAt((audioItemSubject.value.urlSong.length-1));
-        // }
-
-
-        for (int i = 0; i < audioItemSubject.value.urlSong.length; i++) {
-          audioItemSubject.value.urlSong[i].download = event.download[i];
-        }
-
-        player = MixPlayer(
-            urlSong: audioItemSubject.value.urlSong.map((e) => RequestSong(url: e.download!.localUrl!,songExtension: e.songExtension,tag: e.tag)).toList(),
-            duration: 0,
-            onSuccess_: () {
-              // download song from server
-
-              _subscribeToEvents();
-
-              if(event.download.where((element) => element.downloadState == DownloadState.finish).toList().isNotEmpty){
-                player!.setModeLoop(false);
-                // player!.setSpeed(speedMetronome.value);
-                player!.updateVolume(volumeMetronome.value);
-                player!.setStereoBalance(stereoMetronome.value);
-
-              }else{
-                player!.playerErrorMessage.add("Failed to load file, please try again later");
-              }
-
-              speedMetronome.refresh();
-            });
-
-        //
-        // player!.ini_clickSound(localPath: tempLocalFile.reversed.toList(),onSuccess_: (){
-        //   print("iniClickSound onSuccess_");
-        // });
-
-        audioItemSubject.refresh();
+      downLoadTask = event;
+      if(event.isFinish){
         Get.back();
       }
     });
@@ -123,6 +81,59 @@ class PlayerController extends GetxController {
 
 
 
+  }
+
+  initPlayer(){
+     if( player!=null){
+
+     }
+
+     if(downLoadTask.isFinish){
+       // List<String> tempLocalFile = [];
+       //
+       //
+       // for(int i = 0;i<audioItemSubject.value.clickFile.length;i++){
+       //   tempLocalFile.add(event.download[(event.download.length-1)-i].localUrl!);
+       //
+       // }
+       // for(int i = 0;i<audioItemSubject.value.clickFile.length;i++){
+       //   event.download.removeAt((event.download.length-1));
+       //   audioItemSubject.value.urlSong.removeAt((audioItemSubject.value.urlSong.length-1));
+       // }
+
+
+       for (int i = 0; i < audioItemSubject.value.urlSong.length; i++) {
+         audioItemSubject.value.urlSong[i].download = downLoadTask.download[i];
+       }
+
+       player = MixPlayer(
+           urlSong: audioItemSubject.value.urlSong.map((e) => RequestSong(url: e.download!.localUrl!,songExtension: e.songExtension,tag: e.tag)).toList(),
+           onSuccess_: () {
+             // download song from server
+
+             _subscribeToEvents();
+
+             if(downLoadTask.download.where((element) => element.downloadState == DownloadState.finish).toList().isNotEmpty){
+              // player!.setModeLoop(false);
+               // player!.setSpeed(speedMetronome.value);
+               // player!.updateVolume(volumeMetronome.value);
+               // player!.setStereoBalance(stereoMetronome.value);
+
+             }else{
+               player!.playerErrorMessage.add("Failed to load file, please try again later");
+             }
+
+             speedMetronome.refresh();
+           });
+
+       //
+       // player!.ini_clickSound(localPath: tempLocalFile.reversed.toList(),onSuccess_: (){
+       //   print("iniClickSound onSuccess_");
+       // });
+
+       audioItemSubject.refresh();
+      // Get.back();
+     }
   }
 
 
@@ -209,10 +220,13 @@ class PlayerController extends GetxController {
 
   setSwitchMetronome({required bool status}) {
  //   player!.setMetronome(status,speedMetronome.value);
+    switchMetronome(status);
     player!.updateMetronome(status);
     if (status) {
       player!.setStereoBalance(stereoMetronome.value);
       player!.updateVolume(volumeMetronome.value);
+
+      speedMetronome.refresh();
 
     } else {
       player!.setStereoBalance(0);
@@ -220,7 +234,7 @@ class PlayerController extends GetxController {
       // player.updateVolume()
     }
 
-   switchMetronome(status);
+
   }
 
   goforward({required double time}) => player!.goforward(time: time);
@@ -443,18 +457,40 @@ class PlayerController extends GetxController {
 
   }
 
+
+   @override
+   void onClose() {
+     super.onClose();
+
+     // player.stop();
+   }
+
   @override
   void onInit() {
     super.onInit();
     //player = MixPlayer(urlSong: audioItem.urlSong.map((e) => e.url).toList());
     onInitFirst.value = true;
     onInitFirst.listen((p0) {
+
+
+    });
+
+    Future.delayed(const Duration(milliseconds: 500), () {
       setupPlayer();
 
     });
     speedMetronome.listen((p0) {
-      player!.setTagMetronome(p0);
-      player!.updateMetronome(switchMetronome.value);
+     // player!.setTagMetronome(p0);
+      if(switchMetronome.value){
+        if(p0 == "0.5x"){
+          setSpeed(0.5);
+        }else if(p0 == "1.0x"){
+          setSpeed(1.0);
+        }else{
+          setSpeed(2.0);
+        }
+      }
+
     });
     volumeMetronome.listen((p0) {
       player!.updateVolumeMetronome(p0);
