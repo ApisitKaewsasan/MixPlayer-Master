@@ -31,6 +31,7 @@ class MixService {
 
   mixAudioFile(
       {required MixItem mixItem,
+        required double duration,
       required Function(String) onSuccess,
         required Function() onBuild,
       required Function(String) onError}) async {
@@ -47,7 +48,8 @@ class MixService {
         } else {
           final MediaInfo _mediaInfo = MediaInfo();
 
-          var durationMs =  await _mediaInfo.getMediaInfo(mixItem.request.first);
+        //  var durationMs =  await _mediaInfo.getMediaInfo(mixItem.request.first);
+          print("adfvesdwf ${Duration(seconds: duration.toInt()).inMilliseconds}");
           onBuild.call();
           _onProcuessRenderToBufferSubject.add(1.0);
           List<String> pathArray =
@@ -77,32 +79,32 @@ class MixService {
 
           FFmpegKit.executeAsync(
               '${mixPath} -filter_complex ${mixValue}${mixPathEnd}amix=inputs=${mixItem.request.length}:duration=longest" ${fileName}',
-              (session) async {
+                  (session) async {
 
-            final returnCode = await session.getReturnCode();
+                final returnCode = await session.getReturnCode();
 
-            if (ReturnCode.isSuccess(returnCode)) {
-              _onProcuessRenderToBufferSubject.add(100.0);
-              // SUCCESS
-              print("FFmpegKit -> SUCCESS  outfile -> ${fileName}");
-              onSuccess.call(fileName);
-            } else if (ReturnCode.isCancel(returnCode)) {
-              _onProcuessRenderToBufferSubject.add(100.0);
-              // CANCEL
-              // onError.call(
-              //     "transaction failed There might be a file merging error. Please contact the developer.");
-              print("FFmpegKit -> CANCEL ");
-            } else {
-              _onProcuessRenderToBufferSubject.add(100.0);
-              // ERROR
-              onError.call(
-                  "transaction failed There might be a file merging error. Please contact the developer.");
-              print("FFmpegKit ->CANCEL ");
-            }
-          }, (log) {
+                if (ReturnCode.isSuccess(returnCode)) {
+                  _onProcuessRenderToBufferSubject.add(100.0);
+                  // SUCCESS
+                  print("FFmpegKit -> SUCCESS  outfile -> ${fileName}");
+                  onSuccess.call(fileName);
+                } else if (ReturnCode.isCancel(returnCode)) {
+                  _onProcuessRenderToBufferSubject.add(100.0);
+                  // CANCEL
+                  // onError.call(
+                  //     "transaction failed There might be a file merging error. Please contact the developer.");
+                  print("FFmpegKit -> CANCEL ");
+                } else {
+                  _onProcuessRenderToBufferSubject.add(100.0);
+                  // ERROR
+                  onError.call(
+                      "transaction failed There might be a file merging error. Please contact the developer.");
+                  print("FFmpegKit ->CANCEL ");
+                }
+              }, (log) {
             print("FFmpegKit Log -> ${log.getMessage()}");
           }, (statistics) {
-            _onProcuessRenderToBufferSubject.add((statistics.getTime()/durationMs['durationMs'])*100);
+            _onProcuessRenderToBufferSubject.add((statistics.getTime()/Duration(seconds: duration.toInt()).inMilliseconds)*100);
 
           });
         }

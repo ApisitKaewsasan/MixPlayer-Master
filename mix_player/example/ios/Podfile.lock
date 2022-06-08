@@ -55,10 +55,10 @@ SPEC CHECKSUMS:
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
   media_info: 32d75eec667b09571616de41b194abb96670bc22
   mix_player: ed5f5d3696ad189e9d7de1d71c9cc062775c2764
-  path_provider_ios: 7d7ce634493af4477d156294792024ec3485acd5
+  path_provider_ios: 14f3d2fd28c4fdb42f44e0f751d12861c43cee02
   permission_handler_apple: 44366e37eaf29454a1e7b1b7d736c2cceaeb17ce
   SwiftTryCatch: fb6d2b34abe48efd69578dac919293a44f95b481
 
 PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.11.3

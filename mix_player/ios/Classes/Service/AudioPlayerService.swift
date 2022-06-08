@@ -319,11 +319,11 @@ extension AudioPlayerService : AudioPlayerDelegate{
         print("audioPlayerStateChanged \(newState)")
         if(newState == .playing){
            
-            notificationsHandler?.setupNotificationMedia(playbackRate: 1)
+           // notificationsHandler?.setupNotificationMedia(playbackRate: 1)
             startDisplayLink()
         }else if(newState == .stopped || newState == .bufferring || newState == .paused){
             
-            notificationsHandler?.UpdateCenterInfo(playbackRate: 0)
+           // notificationsHandler?.UpdateCenterInfo(playbackRate: 0)
             stopDisplayLink()
         }
        

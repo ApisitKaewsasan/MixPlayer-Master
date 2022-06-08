@@ -78,19 +78,7 @@ class MixPlayer {
           onSuccess: () {
             if (i == (urlSong.length - 1)) {
               if (onSuccess_ != null) onSuccess_.call();
-              final MediaInfo _mediaInfo = MediaInfo();
-              try {
-                _mediaInfo.getMediaInfo(player[i].url.url).then((value) {
-                  playbackEventStream.add(PlaybackEventMessage(
-                      currentTime: 0,
-                      duration:
-                      int.parse(value['durationMs'].toString()).toDouble() /
-                          1000));
-                  this.duration =
-                      int.parse(value['durationMs'].toString()).toDouble() /
-                          1000;
-                });
-              } catch (e) {}
+
               // player[0].setPitch(0);
             }
           });
