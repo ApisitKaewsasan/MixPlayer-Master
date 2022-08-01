@@ -27,11 +27,10 @@ class PlayerData{
 
 
  PlayerData audioItem = PlayerData(songName: "Johnny Knox-I Like You[Demo]",artist: "Artist Name -- Alburm Name",urlSong: [
-   PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/songtest/vocals.mp3",icon: "assets/images/png/mic.png",songExtension: SongExtension.Song,tag: "song"),
-   PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/songtest/bass.mp3",icon: "assets/images/png/bass.png",songExtension: SongExtension.Song,tag: "song") ,
-   PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/songtest/drums.mp3",icon: "assets/images/png/drums.png",songExtension: SongExtension.Song,tag: "song"),
-    PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/songtest/other.mp3",icon: "assets/images/png/orther.png",songExtension: SongExtension.Song,tag: "song"),
-    PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/songtest/piano.mp3",icon: "assets/images/png/piano.png",songExtension: SongExtension.Song,tag: "song")
+   PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/mp3/file-843.mp3",icon: "assets/images/png/mic.png",songExtension: SongExtension.Song,tag: "song"),
+   PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/mp3/file-e50.mp3",icon: "assets/images/png/bass.png",songExtension: SongExtension.Song,tag: "song") ,
+   PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/mp3/file-fe8.mp3",icon: "assets/images/png/drums.png",songExtension: SongExtension.Song,tag: "song"),
+    PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/mp3/file-119.mp3",icon: "assets/images/png/orther.png",songExtension: SongExtension.Song,tag: "song")
  ],duration: 182.88326530612244);
 
 

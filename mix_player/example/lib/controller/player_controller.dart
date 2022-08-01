@@ -107,7 +107,7 @@ class PlayerController extends GetxController {
        }
 
        player = MixPlayer(
-           urlSong: audioItemSubject.value.urlSong.map((e) => RequestSong(url: e.download!.localUrl!,songExtension: e.songExtension,tag: e.tag)).toList(),
+           urlSong: audioItemSubject.value.urlSong.map((e) => RequestSong(url: e.download!.localUrl!,tag: e.tag)).toList(),
            onSuccess_: () {
              // download song from server
 
@@ -157,7 +157,8 @@ class PlayerController extends GetxController {
 
 
     MixService.instance.mixAudioFile(mixItem: MixItem(request: urlExport,reverbConfig:  0.0,speedConfig: player!.speed,panConfig: player!.pan,
-        panPlayerConfig:panPlayerConfig,volumeConfig: volumeConfig,frequencyConfig: player!.frequecy_value,gainConfig: player!.frequecy_value,pitchConfig: player!.pitch,extension: extension.name,fileName: "mix_audio"),
+        panPlayerConfig:panPlayerConfig,volumeConfig: volumeConfig,frequencyConfig: player!.frequecy_value,gainConfig: player!.frequecy_value,pitchConfig: player!.pitch,extension: extension.name,
+        fileName: "mix_audio"),
     onSuccess: (outputPath){
 
     },onBuild: (){
@@ -177,7 +178,7 @@ class PlayerController extends GetxController {
 
           });
 
-    });
+    }, duration: 0);
 
 
     // var file = await MixService.instance.audioExport(

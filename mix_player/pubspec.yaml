@@ -22,7 +22,6 @@ dependencies:
   ffmpeg_kit_flutter: 4.5.1
   path: ^1.8.0
   permission_handler: ^9.2.0
-  media_info: ^0.10.0
 
 
 # For information on the generic Dart part of this file, see the

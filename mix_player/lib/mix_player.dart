@@ -1,7 +1,4 @@
-import 'package:audio_player_platform_interface/audio_player_platform_interface.dart';
-import 'package:audio_player_platform_interface/models/player_mode.dart';
-import 'package:audio_player_platform_interface/models/request/AudioData.dart';
-import 'package:media_info/media_info.dart';
+
 import 'package:mix_player/player_audio.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:uuid/uuid.dart';
@@ -111,18 +108,7 @@ class MixPlayer {
   updateMetronome(bool metronome) {
     this.metronome = metronome;
     player.forEach((element) {
-      if (!metronome && element.url.songExtension == SongExtension.Click) {
-        print("index 1 => ${element.url.tag}  ${element.url.songExtension}");
-        element.updateVolume(0);
-      } else if (metronome &&
-          element.url.songExtension == SongExtension.Click) {
-        print("index 2 => ${element.url.tag}  ${element.url.songExtension}");
-        if (element.url.tag == metronomeTag) {
-
-        } else {
-          element.updateVolume(0);
-        }
-      }
+      //element.updateVolume(100);
     });
   }
 
@@ -157,17 +143,13 @@ class MixPlayer {
 
   setStereoBalanceMetronome(double pan) {
     for (var item in player) {
-      if (item.url.songExtension == SongExtension.Click) {
-        item.setStereoBalance(pan);
-      }
+      item.setStereoBalance(pan);
     }
   }
 
   setStereoBalance(double pan) {
     for (var item in player) {
-      if (item.url.songExtension == SongExtension.Song) {
 
-      }
       item.setStereoBalance(pan);
     }
   }
@@ -189,18 +171,16 @@ class MixPlayer {
   }
 
   updateVolumeMetronome(double volume) {
-    for (var item in player) {
-      if (item.url.songExtension == SongExtension.Click) {
-        _metronomeVolumeTemp = volume;
-        player.forEach((element) {
-          if (metronome && element.url.songExtension == SongExtension.Click) {
-            if (element.url.tag == metronomeTag) {
-              item.updateVolume(volume);
-            }
-          }
-        });
-      }
-    }
+    // for (var item in player) {
+    //     _metronomeVolumeTemp = volume;
+    //     player.forEach((element) {
+    //         if (element.url.tag == metronomeTag) {
+    //           item.updateVolume(volume);
+    //         }
+    //
+    //     });
+    //
+    // }
   }
 
   goforward({required double time}) {
@@ -223,26 +203,20 @@ class MixPlayer {
 
   setSpeed(double speed) {
     for (var item in player) {
-      if (item.url.songExtension == SongExtension.Song) {
-        item.setSpeed(speed);
-      }
+      item.setSpeed(speed);
     }
   }
 
   setPitch(double pitch) {
     for (var item in player) {
-      if (item.url.songExtension == SongExtension.Song) {
-        item.setPitch(pitch);
-      }
+      item.setPitch(pitch);
     }
   }
 
   setEqualizer({required int index, required double value}) {
     for (var item in player) {
-      if (item.url.songExtension == SongExtension.Song) {
-        this.frequecy_value[index] = value;
-        item.setEqualizer(index: index, value: value);
-      }
+      this.frequecy_value[index] = value;
+      item.setEqualizer(index: index, value: value);
     }
   }
 
@@ -259,10 +233,8 @@ class MixPlayer {
     updateVolume(80.0);
     setStereoBalance(0);
     player.forEach((element) {
-      if (element.url.songExtension == SongExtension.Song) {
-        if (element.isMuse) {
-          element.toggleMute();
-        }
+      if (element.isMuse) {
+        element.toggleMute();
       }
     });
   }

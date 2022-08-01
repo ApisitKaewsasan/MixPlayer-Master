@@ -7,7 +7,6 @@ import 'package:enum_to_string/enum_to_string.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_session.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
-import 'package:media_info/media_info.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
@@ -34,22 +33,24 @@ class MixService {
         required double duration,
       required Function(String) onSuccess,
         required Function() onBuild,
+         String pathCache='',
       required Function(String) onError}) async {
     // FileManager.createFolder(extensionFile: mixItem.extension)
     //     .then((filemanager) async {
-      Directory pathCache = await getApplicationDocumentsDirectory();
-      var fileName = "${pathCache.path}/${mixItem.fileName}.${mixItem.extension.toLowerCase()}";
+    Directory directory = await getApplicationDocumentsDirectory();
+
+      var fileName = "${pathCache.isNotEmpty?pathCache:directory.path}/${mixItem.fileName}.${mixItem.extension.toLowerCase()}";
       if (File(mixItem.request.first).existsSync()) {
         File(fileName).delete();
         if (mixItem.request.length>0 && p.extension(mixItem.request.first).split(".")[1] ==
             mixItem.extension.toLowerCase()) {
           onError.call(
               "Default encoder for format ${p.extension(mixItem.request.first.split(".")[1])} (codec ${p.extension(mixItem.request.first.split(".")[1])}) is probably disabled. Please choose an encoder manually.");
+        }else if(duration<=0){
+          onError.call(
+              "Incorrect processing calculation time..");
         } else {
-          final MediaInfo _mediaInfo = MediaInfo();
 
-        //  var durationMs =  await _mediaInfo.getMediaInfo(mixItem.request.first);
-          print("adfvesdwf ${Duration(seconds: duration.toInt()).inMilliseconds}");
           onBuild.call();
           _onProcuessRenderToBufferSubject.add(1.0);
           List<String> pathArray =
@@ -60,6 +61,7 @@ class MixService {
           String atempo = "aresample=44100";
           int index = 0;
           mixItem.request.forEach((element) {
+            print("ewgft43t ${element}");
             String pan = "pan=stereo|c0=c0|c1=c1";
             if (mixItem.panPlayerConfig[index] > 0) {
               pan = "pan=stereo|c0=${(1.0 - (mixItem.panPlayerConfig[index] / 100))}*c0|c1=${mixItem.panPlayerConfig[index] / 100}*c1";
@@ -104,8 +106,7 @@ class MixService {
               }, (log) {
             print("FFmpegKit Log -> ${log.getMessage()}");
           }, (statistics) {
-            _onProcuessRenderToBufferSubject.add((statistics.getTime()/Duration(seconds: duration.toInt()).inMilliseconds)*100);
-
+                  _onProcuessRenderToBufferSubject.add((statistics.getTime()/Duration(seconds: duration.toInt()).inMilliseconds)*100);
           });
         }
      }
