@@ -63,7 +63,6 @@ class MixService {
           String atempo = "aresample=44100";
           int index = 0;
           mixItem.request.forEach((element) {
-            print("ewgft43t ${element}");
             String pan = "pan=stereo|c0=c0|c1=c1";
             if (mixItem.panPlayerConfig[index] > 0) {
               pan = "pan=stereo|c0=${(1.0 - (mixItem.panPlayerConfig[index] / 100))}*c0|c1=${mixItem.panPlayerConfig[index] / 100}*c1";
