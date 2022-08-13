@@ -308,25 +308,25 @@ class MixPlayer {
       playbackEventStream.add(PlaybackEventMessage(
           currentTime: event.currentTime,
           duration: event.duration > 0.0 ? event.duration : this.duration));
-      for (int i = 0; i < player.length; i++) {
-        if (i == 0) {
-          print("*************************");
-        }
-        if (player.first.playbackEventMessage.currentTime !=
-            player[i].playbackEventMessage.currentTime) {
-          print(
-              "ok player ${i + 1}  => ${player[i].playbackEventMessage
-                  .currentTime}");
-        } else {
-          print(
-              "no player ${i + 1} => ${player[i].playbackEventMessage
-                  .currentTime}");
-        }
-
-        if ((i + 1) == player.length) {
-          print("*************************");
-        }
-      }
+      // for (int i = 0; i < player.length; i++) {
+      //   if (i == 0) {
+      //     print("*************************");
+      //   }
+      //   if (player.first.playbackEventMessage.currentTime !=
+      //       player[i].playbackEventMessage.currentTime) {
+      //     print(
+      //         "ok player ${i + 1}  => ${player[i].playbackEventMessage
+      //             .currentTime}");
+      //   } else {
+      //     print(
+      //         "no player ${i + 1} => ${player[i].playbackEventMessage
+      //             .currentTime}");
+      //   }
+      //
+      //   if ((i + 1) == player.length) {
+      //     print("*************************");
+      //   }
+      // }
     });
   }
 }

@@ -1,18 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="a2622b1f-6f3f-4047-b4e1-5894381ba888" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/mix_player/android/src/main/kotlin/com/example/mix_player/models/AudioPlayerStates.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mix_player/android/src/main/kotlin/com/example/mix_player/models/EventMessage.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mix_player/android/src/main/kotlin/com/example/mix_player/MixPlayerPlugin.kt" beforeDir="false" afterPath="$PROJECT_DIR$/mix_player/android/src/main/kotlin/com/example/mix_player/MixPlayerPlugin.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mix_player/android/src/main/kotlin/com/example/mix_player/service/AudioPlayerService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/mix_player/android/src/main/kotlin/com/example/mix_player/service/AudioPlayerService.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mix_player/example/lib/controller/player_controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mix_player/example/lib/controller/player_controller.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mix_player/example/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mix_player/example/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mix_player/ios/Classes/Service/AudioPlayerService.swift" beforeDir="false" afterPath="$PROJECT_DIR$/mix_player/ios/Classes/Service/AudioPlayerService.swift" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mix_player/lib/mix_player.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mix_player/lib/mix_player.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mix_player/lib/mix_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mix_player/lib/mix_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mix_player/lib/player_audio.dart" beforeDir="false" afterPath="$PROJECT_DIR$/mix_player/lib/player_audio.dart" afterDir="false" />
-    </list>
+    <list default="true" id="a2622b1f-6f3f-4047-b4e1-5894381ba888" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -37,7 +29,9 @@
     <property name="project.structure.proportion" value="0.17" />
     <property name="project.structure.side.proportion" value="0.0" />
     <property name="settings.editor.selected.configurable" value="AndroidSdkUpdater" />
+    <property name="show.migrate.to.gradle.popup" value="false" />
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="a2622b1f-6f3f-4047-b4e1-5894381ba888" name="Default Changelist" comment="" />
@@ -47,5 +41,16 @@
       <updated>1648004438610</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>
