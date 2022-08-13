@@ -3,18 +3,20 @@ description: A common platform interface for the just_audio plugin. Different pl
 homepage: https://github.com/ryanheise/just_audio/tree/master/just_audio_platform_interface
 # NOTE: We strongly prefer non-breaking changes, even at the expense of a
 # less-clean API. See https://flutter.dev/go/platform-interface-breaking-changes
-version: 1.0.0
+version: 0.0.2
 
 dependencies:
   flutter:
     sdk: flutter
   plugin_platform_interface: ^2.1.2
-  rxdart: ^0.27.3
+  rxdart: ^0.27.5
 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+
 
 
 environment:

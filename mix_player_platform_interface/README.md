@@ -1,12 +1,12 @@
-# just_audio_platform_interface
+# audio_player_platform_interface
 
-A common platform interface for the [`just_audio`](../just_audio) plugin.
+A common platform interface for the [`mix_player`] plugin.
 
-This interface allows platform-specific implementations of the `just_audio` plugin, as well as the plugin itself, to ensure they are supporting the same interface.
+This interface allows platform-specific implementations of the `mix_player` plugin, as well as the plugin itself, to ensure they are supporting the same interface.
 
 # Usage
 
-To implement a new platform-specific implementation of `just_audio`, extend [`JustAudioPlatform`](lib/just_audio_platform_interface.dart) with an implementation that performs the platform-specific behavior, and when you register your plugin, set the default `JustAudioPlatform` by calling `JustAudioPlatform.instance = MyPlatformJustAudio()`.
+To implement a new platform-specific implementation of `mix_player`, extend [`MixAudioPlatform`](lib/audio_player_platform_interface.dart) with an implementation that performs the platform-specific behavior, and when you register your plugin, set the default `MixAudioPlatform` by calling `MixAudioPlatform.instance = MyPlatformMixAudio()`.
 
 # Note on breaking changes
 
