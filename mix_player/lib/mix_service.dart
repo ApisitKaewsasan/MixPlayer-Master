@@ -41,7 +41,9 @@ class MixService {
 
       var fileName = "${pathCache.isNotEmpty?pathCache:directory.path}/${mixItem.fileName}.${mixItem.extension.toLowerCase()}";
       if (File(mixItem.request.first).existsSync()) {
-        File(fileName).delete();
+        File(fileName).exists().then((value){
+          File(fileName).delete();
+        });
         if (mixItem.request.length>0 && p.extension(mixItem.request.first).split(".")[1] ==
             mixItem.extension.toLowerCase()) {
           onError.call(
