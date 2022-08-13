@@ -89,7 +89,7 @@ public class SwiftMixPlayerPlugin: NSObject, FlutterPlugin {
       }else if("setPan" == call.method){
           player.setPan(pan: Float(request["pan"] as! Double))
       }else if("setPlaybackRate" == call.method){
-          player.setPlaybackRate(playbackRate: request["rate"] as! Float)
+          player.setPlaybackRate(playbackRate: Float(request["rate"] as! Double))
       }else if("seek" == call.method){
           player.seek(at: request["seek"] as! Double)
       }else if("toggleMute" == call.method){
