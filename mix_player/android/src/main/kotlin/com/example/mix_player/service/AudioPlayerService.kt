@@ -292,21 +292,14 @@ class AudioPlayerService(
             val params = PlaybackParams()
             params.pitch = 1.0F
             audioPlayer!!.playbackParams = params
-        } else if (pith >= 1.0) {
+        } else if (pith >= 0.1) {
             val params = PlaybackParams()
-            params.pitch = pith
+            params.pitch = (pith+1)
             audioPlayer!!.playbackParams = params
         } else {
-            var pitch = 1.2
-            for (i in 0 until abs(pith).toInt()) {
-                pitch -= 0.1
-                if (i == abs(pith).toInt() - 1) {
-
-                    val params = PlaybackParams()
-                    params.pitch = DecimalFormat("0.00").format(pitch).toFloat()
-                    audioPlayer!!.playbackParams = params
-                }
-            }
+            val params = PlaybackParams()
+            params.pitch = DecimalFormat("0.00").format( 1-abs(pith)).toFloat()
+            audioPlayer!!.playbackParams = params
         }
 
         if (statePlayer == AudioPlayerStates.paused || statePlayer == AudioPlayerStates.ready) {

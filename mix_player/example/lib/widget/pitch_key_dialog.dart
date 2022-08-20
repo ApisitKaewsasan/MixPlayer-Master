@@ -31,15 +31,15 @@ class PitchKey extends StatelessWidget {
               children: [
                 StreamBuilder<double>(stream: pitchSubject.stream,builder: (context,snapshot){
                   return snapshot.hasData?SfSlider(
-                    min: -10,
-                    max: 10,
+                    min: -0.6,
+                    max: 0.6,
                     value: snapshot.data,
-                    interval: 5,
+                    interval: 0.3,
                     showTicks: true,
                     showLabels: true,
                     enableTooltip: true,
                     showDividers: true,
-                    stepSize: 1,
+                    stepSize: 0.1,
                     onChanged: (dynamic value) {
                       pitchSubject.add(value);
                       controller.player!.setPitch(value);
