@@ -4,21 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mix_player/player_audio.dart';
-import 'package:rxdart/rxdart.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 
 import '../controller/player_controller.dart';
 
 class StereoBalance extends StatelessWidget {
 
-  final PlayerAudio playerAudio;
 
 
    StereoBalance({Key? key, required this.playerAudio}) : super(key: key);
 
-  RxDouble panSubject  = 0.0.obs;
+   final RxDouble panSubject  = 0.0.obs;
 
   final controller = Get.find<PlayerController>();
+   final PlayerAudio playerAudio;
 
   init(){
     panSubject.value = playerAudio.pan;
@@ -34,7 +33,7 @@ class StereoBalance extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text("Stereo Balance",style: GoogleFonts.kanit(fontSize: 18),),
-            SizedBox(height: 40,),
+            const SizedBox(height: 40,),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -44,24 +43,24 @@ class StereoBalance extends StatelessWidget {
                     child: InkWell(
                       splashColor: Colors.blueAccent, // Splash color
                       onTap: () {},
-                      child: SizedBox(width: 56, height: 56, child: Icon(Icons.headset_mic_outlined,color: Colors.white,)),
+                      child: const SizedBox(width: 56, height: 56, child: Icon(Icons.headset_mic_outlined,color: Colors.white,)),
                     ),
                   ),
                 ),
-                SizedBox(width: 20,),
+                const SizedBox(width: 20,),
                 ClipOval(
                   child: Material(
                     color: Colors.blue, // Button color
                     child: InkWell(
                       splashColor: Colors.blueAccent, // Splash color
                       onTap: () {},
-                      child: SizedBox(width: 56, height: 56, child: Icon(Icons.download_sharp,color: Colors.white,)),
+                      child: const SizedBox(width: 56, height: 56, child: Icon(Icons.download_sharp,color: Colors.white,)),
                     ),
                   ),
                 )
               ],
             ),
-            SizedBox(height: 30,),
+            const SizedBox(height: 30,),
             Obx((){
               return Column(
                 children: [

@@ -1,6 +1,5 @@
 
- import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+
 import 'package:mix_player/models/download_task.dart';
 import 'package:mix_player/models/request_song.dart';
 
@@ -27,10 +26,11 @@ class PlayerData{
 
 
  PlayerData audioItem = PlayerData(songName: "Johnny Knox-I Like You[Demo]",artist: "Artist Name -- Alburm Name",urlSong: [
-   PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/mp3/file-843.mp3",icon: "assets/images/png/mic.png",songExtension: SongExtension.Song,tag: "song"),
-   PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/mp3/file-e50.mp3",icon: "assets/images/png/bass.png",songExtension: SongExtension.Song,tag: "song") ,
-   PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/mp3/file-fe8.mp3",icon: "assets/images/png/drums.png",songExtension: SongExtension.Song,tag: "song"),
-    PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/mp3/file-119.mp3",icon: "assets/images/png/orther.png",songExtension: SongExtension.Song,tag: "song")
+   // PlayerUrl(url: "https://firebasestorage.googleapis.com/v0/b/hipsbook-dev.appspot.com/o/สลักจิต%20ป๊อบ%20ปองกูล%20Feat%20Da%20Endorphine%20(ไม่มี%20MV).mp3?alt=media&token=25d10a3d-65d9-4283-9777-d3556d6fc53f",icon: "assets/images/png/mic.png",songExtension: SongExtension.Song,tag: "song"),
+   // PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/mp3/file-e50.mp3",icon: "assets/images/png/bass.png",songExtension: SongExtension.Song,tag: "song") ,
+   // PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/mp3/file-fe8.mp3",icon: "assets/images/png/drums.png",songExtension: SongExtension.Song,tag: "song"),
+    // PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/mp3/file-119.mp3",icon: "assets/images/png/orther.png",songExtension: SongExtension.Song,tag: "song")
+   PlayerUrl(url: "https://stg-api.muse.in.th/api/v1/files/mp3/file-7102.mp3",icon: "assets/images/png/orther.png",songExtension: SongExtension.Song,tag: "song")
  ],duration: 182.88326530612244);
 
 

@@ -1,12 +1,8 @@
 
 import 'package:mix_player/player_audio.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:uuid/uuid.dart';
-
-import 'mix_service.dart';
 import 'models/PlaybackEventMessage.dart';
 import 'models/audio_item.dart';
-import 'models/download_task.dart';
 import 'models/player_state.dart';
 import 'models/request_song.dart';
 
@@ -17,22 +13,9 @@ class MixPlayer {
    double duration = 0;
   bool modeLoop = false;
   bool metronome = false;
-  double _metronomeVolumeTemp = 100;
+  double metronomeVolumeTemp = 100;
 
   String metronomeTag = "";
-
-  // static List<double> frequecy = [
-  //   32,
-  //   64,
-  //   128,
-  //   250,
-  //   500,
-  //   10000,
-  //   20000,
-  //   40000,
-  //   80000,
-  //   160000
-  // ];
 
   static List<double> frequecy = [60, 230, 910, 3600, 14000];
 
@@ -57,6 +40,7 @@ class MixPlayer {
 
     for (int i = 0; i < urlSong.length; i++) {
       player.add(PlayerAudio());
+
       player[i].setAudioItem(
           audioItem: AudioItem(
               enable_equalizer: true,
@@ -171,16 +155,14 @@ class MixPlayer {
   }
 
   updateVolumeMetronome(double volume) {
-    // for (var item in player) {
-    //     _metronomeVolumeTemp = volume;
-    //     player.forEach((element) {
-    //         if (element.url.tag == metronomeTag) {
-    //           item.updateVolume(volume);
-    //         }
-    //
-    //     });
-    //
-    // }
+    for (var item in player) {
+        metronomeVolumeTemp = volume;
+        player.forEach((element) {
+            item.updateVolume(volume);
+
+        });
+
+    }
   }
 
   goforward({required double time}) {
@@ -273,41 +255,45 @@ class MixPlayer {
               PlaybackEventMessage(currentTime: 0, duration: this.duration));
         }
       } else {
-        if (event != PlayerState.error &&
-            event != PlayerState.bufferring &&
-            event != PlayerState.playing) {
-          playerStateChangedStream.add(event);
-        } else if (player
-            .where((element) => element.playState == PlayerState.error)
-            .toList()
-            .length ==
-            player.length &&
-            event == PlayerState.error) {
-          playerStateChangedStream.add(event);
-        } else if (player
-            .where((element) =>
-        element.playState == PlayerState.bufferring)
-            .toList()
-            .length ==
-            player.length &&
-            event == PlayerState.bufferring) {
-          playerStateChangedStream.add(event);
-        } else if (player
-            .where(
-                (element) => element.playState == PlayerState.playing)
-            .toList()
-            .length ==
-            player.length &&
-            event == PlayerState.playing) {
-          playerStateChangedStream.add(event);
-        }
+        playerStateChangedStream.add(event);
+        // if (event != PlayerState.error &&
+        //     event != PlayerState.bufferring &&
+        //     event != PlayerState.playing) {
+        //   playerStateChangedStream.add(event);
+        // } else if (player
+        //     .where((element) => element.playState == PlayerState.error)
+        //     .toList()
+        //     .length ==
+        //     player.length &&
+        //     event == PlayerState.error) {
+        //   playerStateChangedStream.add(event);
+        // } else if (player
+        //     .where((element) =>
+        // element.playState == PlayerState.bufferring)
+        //     .toList()
+        //     .length ==
+        //     player.length &&
+        //     event == PlayerState.bufferring) {
+        //   playerStateChangedStream.add(event);
+        // } else if (player
+        //     .where(
+        //         (element) => element.playState == PlayerState.playing)
+        //     .toList()
+        //     .length ==
+        //     player.length &&
+        //     event == PlayerState.playing) {
+        //   playerStateChangedStream.add(event);
+        // }
       }
     });
 
     playerAudio.playbackEventStream.listen((event) {
-      playbackEventStream.add(PlaybackEventMessage(
-          currentTime: event.currentTime,
-          duration: event.duration > 0.0 ? event.duration : this.duration));
+      if(event.duration > 0){
+        playbackEventStream.add(PlaybackEventMessage(
+            currentTime: event.currentTime,
+            duration: event.duration > 0.0 ? event.duration : this.duration));
+      }
+
       // for (int i = 0; i < player.length; i++) {
       //   if (i == 0) {
       //     print("*************************");

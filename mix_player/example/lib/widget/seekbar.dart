@@ -15,16 +15,13 @@ class SeekBar extends StatelessWidget {
       this.onChangeEnd})
       : super(key: key);
 
-  late SliderThemeData _sliderThemeData;
+  final SliderThemeData _sliderThemeData = const SliderThemeData();
 
   final _seekSubject = BehaviorSubject<Duration>();
   final controller = Get.find<PlayerController>();
 
 
   init(BuildContext context) {
-    _sliderThemeData = SliderTheme.of(context).copyWith(
-      trackHeight: 2.0,
-    );
     if(!controller.dragValue){
       _seekSubject.add(position);
     }
@@ -38,7 +35,6 @@ class SeekBar extends StatelessWidget {
       StreamBuilder<Duration>(
           stream: _seekSubject.stream,
           builder: (context, snapshot) {
-
             return snapshot.hasData?Row(
               children: [
                 Text(
@@ -66,7 +62,7 @@ class SeekBar extends StatelessWidget {
                         child: Slider(
                           min: 0.0,
                           max: duration.inMilliseconds.toDouble(),
-                          value: snapshot.data!.inMilliseconds.toDouble(),
+                          value: snapshot.data!.inMilliseconds.toDouble()<0?0:snapshot.data!.inMilliseconds.toDouble(),
                           onChanged: (value) {
                             //if(!controller.player!.playerErrorMessage.value){
                               controller.dragValue = true;

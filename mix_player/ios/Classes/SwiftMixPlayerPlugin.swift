@@ -17,9 +17,6 @@ public class SwiftMixPlayerPlugin: NSObject, FlutterPlugin {
     var _channel: FlutterMethodChannel
     var _event: [String:BetterEventChannel] = [:]
 
-    // let playera = AudioPlayer()
-    
-    
   public static func register(with registrar: FlutterPluginRegistrar) {
       let channel = FlutterMethodChannel(name: CHANNEL_NAME, binaryMessenger: registrar.messenger())
       let instance = SwiftMixPlayerPlugin(registrar: registrar, channel: channel)
@@ -69,17 +66,17 @@ public class SwiftMixPlayerPlugin: NSObject, FlutterPlugin {
       }else if("initService" == call.method){
           setupEventServer()
       }else if("play" == call.method){
-          player.play(at: request["time"] as! Double)
+          player.playOrPause()
       }else if("reloadPlay" == call.method){
           player.reloadPlay()
       }else if("setModeLoop" == call.method){
           player.setModeLoop(mode: request["mode"] as! Bool)
       }else if("pause" == call.method){
-          player.pause()
+          player.playOrPause()
       }else if("stop" == call.method){
           player.stop()
       }else if("resume" == call.method){
-          player.resume(at: request["time"] as! Double)
+          player.playOrPause()
       }else if("skipForward" == call.method){
           player.skipForward(time: request["time"] as! Float)
       }else if("skipBackward" == call.method){
@@ -99,19 +96,11 @@ public class SwiftMixPlayerPlugin: NSObject, FlutterPlugin {
       }else if("setPitch" == call.method){
           player.setPitch(pitch: Float(request["pitch"] as! Double))
       }else if("setEqualizer" == call.method){
-          player.equaliserService?.update(gain: Float(request["value"] as! Double), for:  request["index"] as! Int)
+          player.updateEQ(gain: Float(request["value"] as! Double), for:  request["index"] as! Int)
       }else if("equaliserReset" == call.method){
-          player.equaliserService?.reset()
+          player.resetEQ()
       }else if("disposePlayer" == call.method){
           disposePlayer()
-      }else if("downloadTask" == call.method){
-          DownaloadServices(result: self, requestUrl: request["request"] as! [String])
-      }else if("cancelDownloadTask" == call.method){
-          let download = DownaloadServices(result: self, requestUrl: request["request"] as! [String])
-          for var i in 0..<(request["request"] as! [String]).count {
-              download.cancelTask(with: (request["request"] as! [String])[i], downloadState: .cancel)
-          }
-          print("cancelDownloadTask \(request["request"] as! [String])");
       }else if("audioExport" == call.method){
         // clearCachesDirectory()
           var engine = AudioEngineExport(url: request["request"] as! [String],reverbConfig: Float(request["reverbConfig"] as! Double),speedConfig: Float(request["speedConfig"] as! Double),panConfig: Float(request["panConfig"] as! Double),pitchConfig: Float(request["pitchConfig"] as! Double), frequencyConfig: request["frequencyConfig"] as! [Int],gainConfig: request["gainConfig"] as! [Int],panPlayerConfig: request["panPlayerConfig"] as! [Float])
@@ -149,7 +138,6 @@ public class SwiftMixPlayerPlugin: NSObject, FlutterPlugin {
     func disposePlayer(){
         for (index, element) in _players {
             element.stop()
-            element.notificationsHandler?.clearNotification()
         }
         // _players.removeAll()
     }

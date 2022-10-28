@@ -1,13 +1,13 @@
+import 'dart:developer';
 import 'dart:io';
 
-import 'package:dio/dio.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mix_player/mix_player.dart';
 import 'package:mix_player/mix_service.dart';
 import 'package:mix_player/models/PlaybackEventMessage.dart';
-import 'package:mix_player/models/audio_item.dart';
 import 'package:mix_player/models/download_task.dart';
 import 'package:mix_player/models/extension.dart';
 import 'package:mix_player/models/mix_item.dart';
@@ -18,7 +18,6 @@ import 'package:mix_player_example/viewmodel/player_data.dart';
 import 'package:mix_player_example/widget/equalizer_dialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:syncfusion_flutter_sliders/sliders.dart';
 
 import '../models/FrequencyModel.dart';
 import '../widget/export_file_dialog.dart';
@@ -44,15 +43,15 @@ class PlayerController extends GetxController {
 
   // metronome ---
   RxString speedMetronome = "1.0x".obs;
-  RxDouble volumeMetronome = 100.0.obs;
+  RxDouble volumeMetronome = 80.0.obs;
   RxDouble stereoMetronome = 0.0.obs;
   RxBool switchMetronome = false.obs;
    DownLoadTask downLoadTask = DownLoadTask(download: [],progress: 0,isFinish: false,requestLoop: 0,requestUrl: []);
 
-  RxList<FrequencyModel> frequecy_item = List.generate(
+  RxList<FrequencyModel> frequencyItem = List.generate(
       MixPlayer.frequecy.length,
       (index) => FrequencyModel(
-          key_frequency: MixPlayer.frequecy[index], controller_value: 0)).obs;
+          keyFrequency: MixPlayer.frequecy[index], controllerValue: 0)).obs;
 
 
    Future<String> getFilePath(uniqueFileName) async {
@@ -65,6 +64,8 @@ class PlayerController extends GetxController {
   setupPlayer() async {
    downloadDialog();
 
+
+
    MixService.instance.downLoadTasks(url:  audioItemSubject.value.urlSong.map((e) => e.url).toList());
     MixService.instance.onDownLoadTask.listen((event) {
       downLoadTask = event;
@@ -73,7 +74,7 @@ class PlayerController extends GetxController {
       }
     });
     MixService.instance.onProcuessRenderToBuffer.listen((event) {
-      print("download -> ${event}");
+      log("download -> $event");
       if(event == 100){
         Get.back();
       }
@@ -87,6 +88,8 @@ class PlayerController extends GetxController {
      if( player!=null){
 
      }
+
+
 
      if(downLoadTask.isFinish){
        // List<String> tempLocalFile = [];
@@ -116,7 +119,8 @@ class PlayerController extends GetxController {
              if(downLoadTask.download.where((element) => element.downloadState == DownloadState.finish).toList().isNotEmpty){
               // player!.setModeLoop(false);
                // player!.setSpeed(speedMetronome.value);
-               // player!.updateVolume(volumeMetronome.value);
+               player!.updateVolume(volumeMetronome.value);
+              audioItemSubject.refresh();
                // player!.setStereoBalance(stereoMetronome.value);
 
              }else{
@@ -155,7 +159,6 @@ class PlayerController extends GetxController {
     }
 
 
-
     MixService.instance.mixAudioFile(mixItem: MixItem(request: urlExport,reverbConfig:  0.0,speedConfig: player!.speed,panConfig: player!.pan,
         panPlayerConfig:panPlayerConfig,volumeConfig: volumeConfig,frequencyConfig: player!.frequecy_value,gainConfig: player!.frequecy_value,pitchConfig: player!.pitch,extension: extension.name,
         fileName: "mix_audio"),
@@ -178,7 +181,7 @@ class PlayerController extends GetxController {
 
           });
 
-    }, duration: 0);
+    }, duration: 1);
 
 
     // var file = await MixService.instance.audioExport(
@@ -199,9 +202,10 @@ class PlayerController extends GetxController {
   }
 
   setStereoBalance(double pan) {
-    stereoMetronome.value = pan;
+
     if (switchMetronome.value) {
-      player!.setStereoBalance(pan);
+      stereoMetronome.value = pan;
+     // player!.setStereoBalance(pan);
     }
   }
 
@@ -388,10 +392,10 @@ class PlayerController extends GetxController {
 
   exportDialog() {
     Get.defaultDialog(title: "Export File Type",titlePadding: const EdgeInsets.only(top: 20),content: Center(
-      child: ExportFile(onclick: (FileExtension ) {
+      child: ExportFile(onclick: (fileExtension ) {
         Get.back();
 
-        audioExport(FileExtension);
+        audioExport(fileExtension);
 
       },),
     ),titleStyle: GoogleFonts.kanit(color: Colors.black,fontSize: 18));
@@ -418,10 +422,10 @@ class PlayerController extends GetxController {
   }
 
   playerReset() {
-    frequecy_item = List.generate(
+    frequencyItem = List.generate(
         MixPlayer.frequecy.length,
         (index) => FrequencyModel(
-            key_frequency: MixPlayer.frequecy[index], controller_value: 0)).obs;
+            keyFrequency: MixPlayer.frequecy[index], controllerValue: 0)).obs;
 
 
     player!.playerReset();
@@ -432,7 +436,7 @@ class PlayerController extends GetxController {
     showModalBottomSheet(
         context: Get.context!,
         builder: (context) {
-          return SizedBox(
+          return  SizedBox(
             child: Metronome(),
           );
         });
@@ -459,12 +463,6 @@ class PlayerController extends GetxController {
   }
 
 
-   @override
-   void onClose() {
-     super.onClose();
-
-     // player.stop();
-   }
 
   @override
   void onInit() {
@@ -494,10 +492,14 @@ class PlayerController extends GetxController {
 
     });
     volumeMetronome.listen((p0) {
-      player!.updateVolumeMetronome(p0);
+      if (switchMetronome.value) {
+        player!.updateVolumeMetronome(p0);
+      }
     });
     stereoMetronome.listen((p0) {
-      player!.setStereoBalanceMetronome(p0);
+      if (switchMetronome.value) {
+        player!.setStereoBalanceMetronome(p0);
+      }
     });
 
   }

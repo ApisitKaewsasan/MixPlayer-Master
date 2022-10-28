@@ -4,10 +4,12 @@ part of 'app_pages.dart';
 abstract class Routes {
   static const home = _Paths.home;
   static const player = _Paths.player;
+  static const mixPlayer = _Paths.mixPlayer;
 }
 
 abstract class _Paths {
   static const home = '/home';
   static const player = '/player';
+  static const mixPlayer = '/mixPlayer';
 
 }

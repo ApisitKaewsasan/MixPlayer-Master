@@ -12,16 +12,16 @@ class HomePage extends GetView<PlayerController> {
       body: Center(
         child: Column(
           children: [
-            SizedBox(height: 40,),
+            const SizedBox(height: 40,),
             ListTile(
-              title: Text(
+              title: const Text(
                 "Test Song", style: TextStyle(color: Colors.black),),
               onTap: () {
                 Get.toNamed(Routes.player);
               },
             ),
             ListTile(
-              title: Text(
+              title: const Text(
                 "DisposePlayer", style: TextStyle(color: Colors.black),),
               onTap: () {
                 if(controller.player!=null){

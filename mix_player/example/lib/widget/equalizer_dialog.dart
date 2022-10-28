@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mix_player/mix_player.dart';
-import 'package:rxdart/rxdart.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 
 import '../controller/player_controller.dart';
@@ -15,12 +14,14 @@ class Equalizer extends StatelessWidget {
 
   final controller = Get.find<PlayerController>();
 
+   Equalizer({Key? key}) : super(key: key);
+
 
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 0,vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 0,vertical: 20),
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -31,15 +32,15 @@ class Equalizer extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Equalizer",style: TextStyle(fontWeight: FontWeight.bold),),
+                  const Text("Equalizer",style: TextStyle(fontWeight: FontWeight.bold),),
                   TextButton(onPressed: (){
-                    controller.frequecy_item.value = MixPlayer.frequecy.map((e) => FrequencyModel(key_frequency: e,controller_value: 0)).toList();
+                    controller.frequencyItem.value = MixPlayer.frequecy.map((e) => FrequencyModel(keyFrequency: e,controllerValue: 0)).toList();
                     controller.player!.equaliserReset();
-                  }, child: Text("Reset",style: TextStyle(fontWeight: FontWeight.bold),))
+                  }, child: const Text("Reset",style: TextStyle(fontWeight: FontWeight.bold),))
                 ],
               ),
             ),
-            Divider(),
+            const Divider(),
             ObxValue<RxList<FrequencyModel>>((snapshot){
               return Center(
                 child: Column(
@@ -53,11 +54,11 @@ class Equalizer extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("${convertText(values.key_frequency)}"),
+                          Text("${convertText(values.keyFrequency)}"),
                           SfSlider(
                             min: Platform.isAndroid?-1500:-50,
                             max: Platform.isAndroid?1500:50,
-                            value: values.controller_value,
+                            value: values.controllerValue,
                             interval: Platform.isAndroid?500:20,
                             showTicks: true,
                             showLabels: true,
@@ -65,7 +66,7 @@ class Equalizer extends StatelessWidget {
                             showDividers: true,
                             stepSize: 1,
                             onChanged: (dynamic value) {
-                              snapshot[key] = FrequencyModel(key_frequency: values.key_frequency,controller_value: value);
+                              snapshot[key] = FrequencyModel(keyFrequency: values.keyFrequency,controllerValue: value);
                               controller.player!.setEqualizer(index: key, value: value);
                             },
                           ),
@@ -79,8 +80,8 @@ class Equalizer extends StatelessWidget {
 
                 ),
               );
-            }, controller.frequecy_item),
-            Divider(),
+            }, controller.frequencyItem),
+            const Divider(),
           ],
         ),
       ),

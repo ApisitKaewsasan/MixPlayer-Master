@@ -8,11 +8,11 @@ import 'package:mix_player_example/viewmodel/player_data.dart';
 import 'package:mix_player_example/widget/SeekBar.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
 
-import 'controller/player_controller.dart';
+import '../controller/player_controller.dart';
+import '../routes/app_pages.dart';
 
 class Player extends GetView<PlayerController> {
-
-
+  const Player({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +47,6 @@ class Player extends GetView<PlayerController> {
                     child: Column(
                       children: [
                         ObxValue<Rx<PlayerData>>((snapshot) {
-                          if (snapshot.value != null) {
                             return Column(
                               children: snapshot.value.urlSong
                                   .asMap()
@@ -56,9 +55,7 @@ class Player extends GetView<PlayerController> {
                                   .values
                                   .toList(),
                             );
-                          } else {
-                            return Text("awit..");
-                          }
+
                         },
                           controller.audioItemSubject,
                         ),
@@ -127,7 +124,7 @@ class Player extends GetView<PlayerController> {
               height: 20,
               errorBuilder: (BuildContext context, Object exception,
                   StackTrace? stackTrace) {
-                return Icon(Icons.error, size: 20,);
+                return const Icon(Icons.error, size: 20,);
               },
             ),
             padding: const EdgeInsets.all(15.0),
@@ -159,7 +156,7 @@ class Player extends GetView<PlayerController> {
         ],
       ),
     )
-        : SizedBox();
+        : const SizedBox();
   }
 
   Widget controlPlayer() {
@@ -174,18 +171,21 @@ class Player extends GetView<PlayerController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(controller.audioItemSubject.value.songName,
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontWeight: FontWeight.bold, fontSize: 15),),
-                  SizedBox(height: 5,),
+                  const SizedBox(height: 5,),
                   Text(controller.audioItemSubject.value.artist,
-                    style: TextStyle(fontSize: 13),),
+                    style: const TextStyle(fontSize: 13),),
                 ],
               ),
-              IconButton(onPressed: () {}, icon: Image.asset(
-                "assets/images/png/heart.png",
-                width: 30,
-                height: 30,
-              ))
+              IconButton(onPressed: () {
+                for (var element in controller.player!.player) {
+                  if(element.playing){
+                      element.pause();
+                  }
+                }
+                Get.toNamed(Routes.mixPlayer);
+              }, icon: const Icon(Icons.play_lesson_outlined,size: 30,)),
             ],
           ),
 

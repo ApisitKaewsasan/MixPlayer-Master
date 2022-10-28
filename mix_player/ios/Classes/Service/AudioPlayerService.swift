@@ -16,28 +16,53 @@ class AudioPlayerService:NSObject{
     private var reference: SwiftMixPlayerPlugin
     private var audioSystemResetObserver: Any?
     private var displayLink: CADisplayLink?
-    var engines = AVAudioEngine()
-    var audioPlayer = AVAudioPlayerNode()
-    var notificationsHandler: NotificationsHandler? = nil
+    var engine = AVAudioEngine()
+    var player = AVAudioPlayerNode()
+    var changePitchEffect = AVAudioUnitTimePitch()
+    var eqUnit = AVAudioUnitEQ()
+   
+    var timer:Timer!
     
     var playerId: String
     var audioItem: AudioItem?
-    
-    var speedControl = AVAudioUnitVarispeed()
-    var pitchControl = AVAudioUnitTimePitch()
+
     var unitSampler =  AVAudioMixerNode()
     let reverb = AVAudioUnitReverb()
+    var audioFile:AVAudioFile!
     
-    var player = AudioPlayer()
-    var equaliserService: EqualizerService? = nil
+    private var needsFileScheduled = true
+    
+    private var audioSampleRate: Double = 0
+    private var audioLengthSeconds: Double = 0
+
+    private var seekFrame: AVAudioFramePosition = 0
+    private var currentPosition: AVAudioFramePosition = 0
+    private var audioLengthSamples: AVAudioFramePosition = 0
+    
+    private var currentFrame: AVAudioFramePosition {
+        guard
+            let lastRenderTime = player.lastRenderTime,
+            let playerTime = player.playerTime(forNodeTime: lastRenderTime)
+        else {
+            return 0
+        }
+        
+        return playerTime.sampleTime
+    }
+    
     var duration:CMTime?
     
+    var state = AudioPlayerStates.ready
+    
     var modeLoop  = false
+    var isMute = true
+    var volume:Float = 0.0
 
   
     init(reference: SwiftMixPlayerPlugin,playerId : String) {
         self.reference = reference
         self.playerId = playerId
+        
     }
     
 
@@ -45,61 +70,115 @@ class AudioPlayerService:NSObject{
     func initData(audioItem:AudioItem){
         self.audioItem = audioItem
        
+    
+        setupAudioFile()
+        setupDisplayLink()
       
-        self.player.delegate = self
-        self.configureAudioSession()
-        self.registerSessionEvents()
-        
-        activateAudioSession()
-        player.attach(nodes: [speedControl,pitchControl,unitSampler])
-        equaliserService = EqualizerService(playerService: self)
-        player.volume = Float((0.01*self.audioItem!.volume!))
+    }
 
-        
-       // player.attach(node: audioPlayer)
-      
-        notificationsHandler = NotificationsHandler(reference: self)
-        
+    
+    func setupAudioFile(){
+        do {
+            guard let destinationURL = localFilePath(for: URL(string: audioItem!.url!)!) else { return }
+            let file = try AVAudioFile(forReading: destinationURL)
+          
+            let format = file.processingFormat
+
+            audioLengthSamples = file.length
+            audioSampleRate = format.sampleRate
+            audioLengthSeconds = Double(audioLengthSamples) / audioSampleRate
+            audioFile = file
+            configureEqualizer()
+            configureEngine(with: format)
+            
+           } catch let error {
+               state = AudioPlayerStates.error
+              print("error \(error.localizedDescription)")
+           }
     }
     
+    private func configureEngine(with format: AVAudioFormat) {
+       
+      engine.attach(player)
+      engine.attach(changePitchEffect)
+      engine.attach(unitSampler)
+      engine.attach(eqUnit)
+        
+      engine.connect(player,to: eqUnit,format: format)
+      engine.connect(eqUnit,to: unitSampler,format: format)
+      engine.connect(unitSampler,to: changePitchEffect,format: format)
+      engine.connect(changePitchEffect,to: engine.mainMixerNode,format: format)
+        
+      engine.prepare()
+
+      do {
+        try engine.start()
+
+        scheduleAudioFile()
+      } catch {
+          state = AudioPlayerStates.error
+        print("Error starting the player: \(error.localizedDescription)")
+      }
+    }
     
+
+    private func configureEqualizer(){
+        eqUnit = AVAudioUnitEQ(numberOfBands: self.audioItem!.frequecy!.count)
+        
+        for i in 0..<self.audioItem!.frequecy!.count {
+            eqUnit.bands[i].bypass = false
+            eqUnit.bands[i].filterType = .parametric
+            eqUnit.bands[i].frequency = Float(self.audioItem!.frequecy![i])
+            eqUnit.bands[i].bandwidth = 0.5
+            eqUnit.bands[i].gain = 0
+        }
+    }
+    
+    private func scheduleAudioFile() {
+      guard
+        let file = audioFile,
+        needsFileScheduled
+      else {
+        return
+      }
+
+      needsFileScheduled = false
+      seekFrame = 0
+
+      player.scheduleFile(file, at: nil) {
+        self.needsFileScheduled = true
+      }
+    }
 
 
     func stop() {
-        if(player.state != .error){
-            player.stop()
-        }
+     player.stop()
     }
 
     func pause() {
-        if(player.state != .error && player.state == .playing){
+        if(state != AudioPlayerStates.error){
             player.pause()
+            reference.onPlayerStateChanged(playerId: playerId, state: .error)
         }
     }
-
-  
 
     func toggleMute() {
-        if(player.state != .error){
-            if(player.muted){
-                player.muted = false
+        if(state != AudioPlayerStates.error){
+            if(isMute){
+                volume = player.volume
+                isMute = false
+                player.volume = 0
             }else{
-                player.muted = true
+                isMute = true
+                player.volume = volume
             }
-        }
-    }
-
-    func update(rate: Float) {
-        if(player.state != .error){
-            player.rate = rate
         }
     }
     
     func resume(at:Double) {
-        if(player.state != .error){
-            player.seek(to: at)
-            player.resume()
-
+        if(state != AudioPlayerStates.error){
+            player.play()
+            reference.onPlayerStateChanged(playerId: playerId, state: .playing)
         }
     }
     
@@ -108,274 +187,251 @@ class AudioPlayerService:NSObject{
     }
     
     func reloadPlay(){
-        player.seek(to: 0.0)
+        seek(at: 0.0)
         toggle(at: 0.0)
     }
     
   
-    func play(at:Double){
-        if(player.state != .error){
-            if(audioItem!.isLocalFile){
-                guard let destinationURL = localFilePath(for: URL(string: audioItem!.url!)!) else { return }
-                
-                player.play(url: destinationURL)
-                player.seek(to: at)
-                
-            }else{
-                
-                player.play(url: URL(string: audioItem!.url!)!)
-                player.seek(to: at)
-                
-            }
+  func playOrPause(){
+      
+     if(state != AudioPlayerStates.error){
+        
+        if player.isPlaying {
+          displayLink?.isPaused = true
+          disconnectVolumeTap()
+            reference.onPlayerStateChanged(playerId: playerId, state: .paused)
+          player.pause()
+        } else {
+          displayLink?.isPaused = false
+          connectVolumeTap()
+            
+          if needsFileScheduled {
+            scheduleAudioFile()
+          }
+            reference.onPlayerStateChanged(playerId: playerId, state: .playing)
+                player.play()
+          
+         }
+      }
+     
+    }
+    
+    private func connectVolumeTap() {
+      let format = engine.mainMixerNode.outputFormat(forBus: 0)
+
+      engine.mainMixerNode.installTap(
+        onBus: 0,
+        bufferSize: 1024,
+        format: format
+      ) { buffer, _ in
+        guard let channelData = buffer.floatChannelData else {
+          return
         }
-//        guard let destinationURL = localFilePath(for: URL(string: audioItem!.url!)!) else { return }
-//        var metronome = EngMetronome(url: destinationURL)
-//        metronome.play(bpm: 360)
+
+        let channelDataValue = channelData.pointee
+        let channelDataValueArray = stride(
+          from: 0,
+          to: Int(buffer.frameLength),
+          by: buffer.stride)
+          .map { channelDataValue[$0] }
+
+        let rms = sqrt(channelDataValueArray.map {
+          return $0 * $0
+        }
+        .reduce(0, +) / Float(buffer.frameLength))
+
+        let avgPower = 20 * log10(rms)
+        let meterLevel = self.scaledPower(power: avgPower)
+
+      }
     }
 
+    private func disconnectVolumeTap() {
+      engine.mainMixerNode.removeTap(onBus: 0)
+    }
+    
+    // MARK: Audio metering
+
+    private func scaledPower(power: Float) -> Float {
+      guard power.isFinite else {
+        return 0.0
+      }
+
+      let minDb: Float = -80
+
+      if power < minDb {
+        return 0.0
+      } else if power >= 1.0 {
+        return 1.0
+      } else {
+        return (abs(minDb) - abs(power)) / abs(minDb)
+      }
+    }
+    
+  
+
     func toggle(at:Double) {
-            if(player.state != .error){
-                if(player.state == .playing){
-                    pause()
-                }else if(player.state == .paused){
-                    resume(at: at)
-                }else{
-                    play(at: at)
-                }
-            }
-        
+        if(player.isPlaying){
+            pause()
+        }else{
+            resume(at: at)
+         }
     }
     
     func wetDryMix(mix:Float){
-        if(player.state != .error){
-            reverb.wetDryMix = mix
-        }
+//        if(player.state != .error){
+//            reverb.wetDryMix = mix
+//        }
     }
     
     func skipForward(time:Float){
-        if(player.state != .error && player.state != .bufferring){
-            let increase = self.player.progress + Double(time)
-            if increase < self.player.duration{
-                seek(at: Double(increase))
-            }
-        }
+        let currentTime = Double(currentPosition) / audioSampleRate
+        seek(at: currentTime+Double(time))
         
     }
     
     func skipBackward(time:Float){
-        if(player.state != .error && player.state != .bufferring){
-            let increase = self.player.progress - Double(time)
-            if increase < 0{
-               
-                seek(at: 0)
-            }else{
-               
-                seek(at: Double(increase))
-            }
-        }
+        let currentTime = Double(currentPosition) / audioSampleRate
+        seek(at: currentTime-Double(time))
     }
     
     func updateVolume(volume:Float){
-        if(player.state != .error){
-            player.volume = (0.01 * volume)
-        }
+        player.volume = (0.01 * volume)
     }
 
     func seek(at time: Double) {
-        if(player.state != .error){
-            player.seek(to: time)
-            self.reference.playbackEventMessageStream(playerId: self.playerId, currentTime: time, duration:self.player.duration)
+        guard let audioFile = audioFile else {
+          return
+        }
+
+        let offset = AVAudioFramePosition(time * audioSampleRate)
+        seekFrame = max(offset, 0)
+        seekFrame = min(offset, audioLengthSamples)
+        currentPosition = seekFrame
+
+        let wasPlaying = player.isPlaying
+        player.stop()
+
+        if currentPosition < audioLengthSamples {
+          updateDisplay()
+          needsFileScheduled = false
+
+          let frameCount = AVAudioFrameCount(audioLengthSamples - seekFrame)
+       
+          player.scheduleSegment(
+            audioFile,
+            startingFrame: seekFrame < 0 ? 1: seekFrame,
+            frameCount: frameCount,
+            at: nil
+          ) {
+            self.needsFileScheduled = true
+          }
+
+          if wasPlaying {
+            player.play()
+          }
         }
     }
 
     
     func setPan(pan:Float){
-        if(player.state != .error){
-            unitSampler.pan = pan / 100
-        }
+        unitSampler.pan = pan / 100
     }
     
     func setPitch(pitch:Float){
-        if(player.state != .error){
-            print("efwcec \(pitch)")
-            pitchControl.pitch = pitch * 100
-        }
+        changePitchEffect.pitch = 1200 * pitch
+       
     }
-    
-    func addNode(_ node: AVAudioNode) {
-        if(player.state != .error){
-            player.attach(node: node)
-        }
-    }
-
-    func removeNode(_ node: AVAudioNode) {
-        if(player.state != .error){
-            player.detach(node: node)
-        }
-    }
-    
 
     func setPlaybackRate(playbackRate: Float) {
-        if(player.state != .error){
-            speedControl.rate = playbackRate
-        }
+        changePitchEffect.rate = playbackRate
     }
     
-   
-    
-    private func startDisplayLink() {
-        if(player.state != .error){
-            displayLink?.invalidate()
-            displayLink = nil
-            displayLink = UIScreen.main.displayLink(withTarget: self, selector: #selector(tick))
-            displayLink?.preferredFramesPerSecond = 6
-            displayLink?.add(to: .current, forMode: .common)
-        }
-    }
-    
-    private func stopDisplayLink() {
-        displayLink?.invalidate()
-        displayLink = nil
-    
+    func updateEQ(gain: Float, for index: Int) {
+        eqUnit.bands[index].gain = gain
     }
 
-    @objc private func tick() {
-        let duration = player.duration
-        let progress = player.progress
-
-
-        let elapsed = Int(progress)
-        let remaining = Int(duration - progress)
-        //print("ewfcewfc \(timeFrom(seconds: elapsed))     \(timeFrom(seconds: remaining))")
-        reference.playbackEventMessageStream(playerId: playerId, currentTime: progress, duration: duration)
+    func resetEQ() {
+        eqUnit.bands.forEach { $0.gain = 0 }
     }
     
-    
-    private func timeFrom(seconds: Int) -> String {
-        let correctSeconds = seconds % 60
-        let minutes = (seconds / 60) % 60
-        let hours = seconds / 3600
-
-        if hours > 0 {
-            return String(format: "%02d:%02d:%02d", hours, minutes, correctSeconds)
-        }
-        return String(format: "%02d:%02d", minutes, correctSeconds)
+    private func setupDisplayLink() {
+      displayLink = CADisplayLink(
+        target: self,
+        selector: #selector(updateDisplay))
+      displayLink?.add(to: .current, forMode: .default)
+      displayLink?.isPaused = true
     }
 
-    private func registerSessionEvents() {
-        // Note that a real app might need to observer other AVAudioSession notifications as well
-        audioSystemResetObserver = NotificationCenter.default.addObserver(forName: AVAudioSession.mediaServicesWereResetNotification,
-                                                                          object: nil,
-                                                                          queue: nil) { [unowned self] _ in
-            self.configureAudioSession()
+    @objc private func updateDisplay() {
+        let currentTime = Double(currentPosition) / audioSampleRate
+        let duration = audioLengthSeconds
+        
+      currentPosition = currentFrame + seekFrame
+      currentPosition = max(currentPosition, 0)
+      currentPosition = min(currentPosition, audioLengthSamples)
+      reference.playbackEventMessageStream(playerId: playerId, currentTime: currentTime, duration: duration)
             
-        }
+      if currentPosition >= audioLengthSamples {
+         
+        player.stop()
+
+        seekFrame = 0
+        currentPosition = 0
+        displayLink?.isPaused = true
+        seek(at: 0)
+        disconnectVolumeTap()
+        
+          
+          if(modeLoop){
+              print("currentTime \(PlayerTime(elapsedTime: currentTime, remainingTime: audioLengthSeconds).elapsedText)   duration \(duration)")
+              playOrPause()
+              seek(at: 64)
+          }
+          reference.onPlayerStateChanged(playerId: playerId, state: .ready)
+      }
+
     }
 
-    private func configureAudioSession() {
-        do {
-            print("AudioSession category is AVAudioSessionCategoryPlayback")
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, policy: .longFormAudio, options: [])
-            try AVAudioSession.sharedInstance().setPreferredIOBufferDuration(0.1)
-        } catch let error as NSError {
-            print("Couldn't setup audio session category to Playback \(error.localizedDescription)")
-        }
-    }
-
-    private func activateAudioSession() {
-        do {
-            print("AudioSession is active")
-            try AVAudioSession.sharedInstance().setActive(true, options: [])
-
-        } catch let error as NSError {
-            print("Couldn't set audio session to active: \(error.localizedDescription)")
-        }
-    }
-
-    private func deactivateAudioSession() {
-        do {
-            print("AudioSession is deactivated")
-            try AVAudioSession.sharedInstance().setActive(false)
-        } catch let error as NSError {
-            print("Couldn't deactivate audio session: \(error.localizedDescription)")
-        }
-    }
 }
 
+enum TimeConstant {
+  static let secsPerMin = 60
+  static let secsPerHour = TimeConstant.secsPerMin * 60
+}
+struct PlayerTime {
+  let elapsedText: String
+  let remainingText: String
 
-extension AudioPlayerService : AudioPlayerDelegate{
+  static let zero: PlayerTime = .init(elapsedTime: 0, remainingTime: 0)
 
-    func audioPlayerDidStartPlaying(player _: AudioPlayer, with _: AudioEntryId) {
-        print("audioPlayerDidStartPlaying")
+  init(elapsedTime: Double, remainingTime: Double) {
+    elapsedText = PlayerTime.formatted(time: elapsedTime)
+    remainingText = PlayerTime.formatted(time: remainingTime)
+  }
 
+  private static func formatted(time: Double) -> String {
+    var seconds = Int(ceil(time))
+    var hours = 0
+    var mins = 0
+
+    if seconds > TimeConstant.secsPerHour {
+      hours = seconds / TimeConstant.secsPerHour
+      seconds -= hours * TimeConstant.secsPerHour
     }
 
-    func audioPlayerDidFinishBuffering(player _: AudioPlayer, with _: AudioEntryId) {
-        print("audioPlayerDidFinishBuffering")
-       
+    if seconds > TimeConstant.secsPerMin {
+      mins = seconds / TimeConstant.secsPerMin
+      seconds -= mins * TimeConstant.secsPerMin
     }
 
-    func audioPlayerStateChanged(player _: AudioPlayer, with newState: AudioPlayerState, previous _: AudioPlayerState) {
-        print("audioPlayerStateChanged \(newState)")
-        if(newState == .playing){
-           
-           // notificationsHandler?.setupNotificationMedia(playbackRate: 1)
-            startDisplayLink()
-        }else if(newState == .stopped || newState == .bufferring || newState == .paused){
-            
-           // notificationsHandler?.UpdateCenterInfo(playbackRate: 0)
-            stopDisplayLink()
-        }
-       
-            if(newState == .ready){
-                reference.onPlayerStateChanged(playerId: playerId, state: .ready)
-            }else if(newState == .error){
-                reference.onPlayerStateChanged(playerId: playerId, state: .error)
-                
-            }else if(newState == .bufferring){
-                reference.onPlayerStateChanged(playerId: playerId, state: .bufferring)
-            }else if(newState == .disposed){
-                reference.onPlayerStateChanged(playerId: playerId, state: .disposed)
-            }else if(newState == .paused){
-                reference.onPlayerStateChanged(playerId: playerId, state: .paused)
-            }else if(newState == .playing){
-                reference.onPlayerStateChanged(playerId: playerId, state: .playing)
-            }else if(newState == .running){
-                reference.onPlayerStateChanged(playerId: playerId, state: .running)
-            }
-        
-        
+    var formattedString = ""
+    if hours > 0 {
+      formattedString = "\(String(format: "%02d", hours)):"
     }
-
-    func audioPlayerDidFinishPlaying(player _: AudioPlayer,
-                                     entryId _: AudioEntryId,
-                                     stopReason _: AudioPlayerStopReason,
-                                     progress _: Double,
-                                     duration _: Double)
-    {
-        print("audioPlayerDidFinishPlaying")
-        //reload()
-        reference.onPlayerStateChanged(playerId: playerId, state: .complete)
-        if(self.modeLoop){
-            play(at: 0.0)
-        }
-        
-    }
-
-    func audioPlayerUnexpectedError(player _: AudioPlayer, error: AudioPlayerError) {
-        print("audioPlayerUnexpectedError")
-        reference.onError(playerId: playerId, message: (error.errorDescription! as String))
-    }
-
-    func audioPlayerDidCancel(player _: AudioPlayer, queuedItems _: [AudioEntryId]) {
-        print("audioPlayerDidCancel")
-    }
-
-    func audioPlayerDidReadMetadata(player _: AudioPlayer, metadata: [String: String]) {
-        print("audioPlayerDidReadMetadata")
-
-    }
-
+    formattedString += "\(String(format: "%02d", mins)):\(String(format: "%02d", seconds))"
+    return formattedString
+  }
 }
 
 

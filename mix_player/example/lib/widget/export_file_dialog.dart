@@ -14,22 +14,22 @@ class ExportFile extends StatelessWidget {
     return Container(
       color: Colors.white,
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 30),
+        padding: const EdgeInsets.symmetric(vertical: 30),
         child: SingleChildScrollView(
           child: Column(
             children:  [
               TextButton(onPressed: (){
                 onclick.call(FileExtension.MP3);
               }, child: Text("MP3",style: GoogleFonts.kanit(color: Colors.black,fontSize: 16),)),
-              SizedBox(height: 5),
-              Divider(),
-              SizedBox(height: 5),
+              const SizedBox(height: 5),
+              const Divider(),
+              const SizedBox(height: 5),
               TextButton(onPressed: (){
                 onclick.call(FileExtension.M4A);
               }, child: Text("M4A",style: GoogleFonts.kanit(color: Colors.black,fontSize: 16),)),
-              SizedBox(height: 5),
-              Divider(),
-              SizedBox(height: 5),
+              const SizedBox(height: 5),
+              const Divider(),
+              const SizedBox(height: 5),
               TextButton(onPressed: (){
                 onclick.call(FileExtension.WAV);
               }, child: Text("WAV",style: GoogleFonts.kanit(color: Colors.black,fontSize: 16),)),
