@@ -25,26 +25,6 @@ class MethodChannelMixAudio extends MixAudioPlatform {
     return MethodChannelAudioPlayer();
   }
 
-
-
-  // Map<dynamic, dynamic> _invokeMethod( [
-  //   Map<dynamic, dynamic> arguments = const <dynamic, dynamic>{},
-  // ]) {
-  //   final enhancedArgs = <dynamic, dynamic>{
-  //     ...arguments,
-  //     'playerId': arguments['id'],
-  //   };
-  //   return enhancedArgs;
-  // }
-  //
-
-  // @override
-  // Future<DisposePlayerResponse> disposePlayer(
-  //     DisposePlayerRequest request) async {
-  //   return DisposePlayerResponse.fromMap(
-  //       (await _mainChannel.invokeMethod<Map<dynamic, dynamic>>(
-  //           'disposePlayer', request.toMap()))!);
-  // }
 }
 
 /// An implementation of [AudioPlayerPlatform] that uses method channels.

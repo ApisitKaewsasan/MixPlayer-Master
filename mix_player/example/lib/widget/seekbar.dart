@@ -62,7 +62,7 @@ class SeekBar extends StatelessWidget {
                         child: Slider(
                           min: 0.0,
                           max: duration.inMilliseconds.toDouble(),
-                          value: snapshot.data!.inMilliseconds.toDouble()<0?0:snapshot.data!.inMilliseconds.toDouble(),
+                          value: snapshot.data!.inMilliseconds.toDouble()<0?0:snapshot.data!.inMilliseconds.toDouble()>duration.inMilliseconds.toDouble()?0:snapshot.data!.inMilliseconds.toDouble(),
                           onChanged: (value) {
                             //if(!controller.player!.playerErrorMessage.value){
                               controller.dragValue = true;

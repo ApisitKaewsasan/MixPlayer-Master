@@ -1,11 +1,11 @@
 PODS:
   - AudioStreaming (0.6.0)
-  - ffmpeg-kit-ios-https (5.1)
-  - ffmpeg_kit_flutter (5.1.0):
-    - ffmpeg_kit_flutter/https (= 5.1.0)
+  - ffmpeg-kit-ios-https (4.5.1)
+  - ffmpeg_kit_flutter (4.5.1):
+    - ffmpeg_kit_flutter/https (= 4.5.1)
     - Flutter
-  - ffmpeg_kit_flutter/https (5.1.0):
-    - ffmpeg-kit-ios-https (= 5.1)
+  - ffmpeg_kit_flutter/https (4.5.1):
+    - ffmpeg-kit-ios-https (= 4.5.1)
     - Flutter
   - Flutter (1.0.0)
   - mix_player (0.0.1):
@@ -15,18 +15,12 @@ PODS:
   - path_provider_ios (0.0.1):
     - Flutter
   - SwiftTryCatch (0.0.1)
-  - volume_control (0.0.1):
-    - Flutter
-  - volume_controller (0.0.1):
-    - Flutter
 
 DEPENDENCIES:
   - ffmpeg_kit_flutter (from `.symlinks/plugins/ffmpeg_kit_flutter/ios`)
   - Flutter (from `Flutter`)
   - mix_player (from `.symlinks/plugins/mix_player/ios`)
   - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
-  - volume_control (from `.symlinks/plugins/volume_control/ios`)
-  - volume_controller (from `.symlinks/plugins/volume_controller/ios`)
 
 SPEC REPOS:
   trunk:
@@ -43,21 +37,15 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/mix_player/ios"
   path_provider_ios:
     :path: ".symlinks/plugins/path_provider_ios/ios"
-  volume_control:
-    :path: ".symlinks/plugins/volume_control/ios"
-  volume_controller:
-    :path: ".symlinks/plugins/volume_controller/ios"
 
 SPEC CHECKSUMS:
   AudioStreaming: f3605c8459d56fea615ac8b97084c07137247878
-  ffmpeg-kit-ios-https: 8dffbe1623a2f227be98fc314294847a97f818e4
-  ffmpeg_kit_flutter: 17e9f35a4ec996ac55051c20be05240f2a0b53e8
+  ffmpeg-kit-ios-https: cec24d405b511e4f274980d8a9c751d384f89558
+  ffmpeg_kit_flutter: e2f0bd6b75e361faeee3b34c70650d3ec6ec35d0
   Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
   mix_player: ed5f5d3696ad189e9d7de1d71c9cc062775c2764
   path_provider_ios: 14f3d2fd28c4fdb42f44e0f751d12861c43cee02
   SwiftTryCatch: fb6d2b34abe48efd69578dac919293a44f95b481
-  volume_control: ae2b373c092d9ff5e57f704e9fa5e3098cc16d07
-  volume_controller: 531ddf792994285c9b17f9d8a7e4dcdd29b3eae9
 
 PODFILE CHECKSUM: ef19549a9bc3046e7bb7d2fab4d021637c0c58a3
 

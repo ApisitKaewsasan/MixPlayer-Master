@@ -1,4 +1,4 @@
-
+import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:mix_player/player_audio.dart';
 import 'package:rxdart/rxdart.dart';
 import 'models/PlaybackEventMessage.dart';
@@ -10,11 +10,11 @@ class MixPlayer {
   List<PlayerAudio> player = <PlayerAudio>[];
   List<RequestSong> metronomeSound = <RequestSong>[];
   late List<RequestSong>? urlSong;
-   double duration = 0;
+  double duration = 0;
   bool modeLoop = false;
   bool metronome = false;
   double metronomeVolumeTemp = 100;
-
+  bool isSeek = false;
   String metronomeTag = "";
 
   static List<double> frequecy = [60, 230, 910, 3600, 14000];
@@ -25,8 +25,33 @@ class MixPlayer {
   final playerStateChangedStream = BehaviorSubject<PlayerState>();
   final playerErrorMessage = BehaviorSubject<String>();
 
-  MixPlayer({required List<RequestSong> urlSong,
-    Function()? onSuccess_}) {
+  static Future<double> getFileDuration(String mediaPath) async {
+
+    final mediaInfoSession = await FFprobeKit.getMediaInformation(mediaPath);
+    try {
+      final mediaInfo = mediaInfoSession.getMediaInformation()!;
+      final duration = double.parse(mediaInfo.getDuration()!);
+      return duration;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  checkMismatchFile(List<RequestSong> song) async {
+    var time = 0.0;
+    for (int i = 0; i < urlSong!.length; i++) {
+      var value = await getFileDuration(urlSong![i].url);
+      if (time == 0) {
+        time = value;
+      } else if (time != value) {
+        playerErrorMessage
+            .add("All files have time discrepancies, please try again later.");
+        break;
+      }
+    }
+  }
+
+  MixPlayer({required List<RequestSong> urlSong, Function()? onSuccess_}) {
     playerStateChangedStream.add(PlayerState.bufferring);
 
     this.urlSong = urlSong;
@@ -36,19 +61,17 @@ class MixPlayer {
         .values
         .toList();
     this.duration = duration;
-
-
+   // checkMismatchFile(urlSong);
     for (int i = 0; i < urlSong.length; i++) {
       player.add(PlayerAudio());
 
       player[i].setAudioItem(
           audioItem: AudioItem(
               enable_equalizer: true,
-              title: "ApisitKaewsasan",
-              albumTitle: "refvrecf",
-              artist: "wefcerscf",
-              albumimageUrl:
-              "https://images.iphonemod.net/wp-content/uploads/2022/01/Apple-Music-got-2nd-place-in-music-streaming-market-cover.jpg",
+              title: "",
+              albumTitle: "",
+              artist: "",
+              albumimageUrl: "",
               url: urlSong[i],
               isLocalFile: true,
               frequecy: frequecy,
@@ -66,10 +89,9 @@ class MixPlayer {
       _subscribeToEvents(index: i, playerAudio: player[i]);
     }
     playerStateChangedStream.add(PlayerState.ready);
-
   }
 
- // setTagMetronome(String tag) => metronomeTag = tag;
+  // setTagMetronome(String tag) => metronomeTag = tag;
 
   // updateMetronome(bool metronome) {
   //   this.metronome = metronome;
@@ -96,6 +118,13 @@ class MixPlayer {
     });
   }
 
+  setModeLoop(bool status){
+    modeLoop = status;
+    for (int i = 0; i < player.length; i++) {
+      player[i].setModeLoop(status);
+    }
+  }
+
   togglePlay({double at = 0.0}) {
     for (int i = 0; i < player.length; i++) {
       if (player[i].playState == PlayerState.playing) {
@@ -111,7 +140,6 @@ class MixPlayer {
     }
     updateMetronome(metronome);
   }
-
 
   reloadPlay() {
     for (int i = 0; i < player.length; i++) {
@@ -133,7 +161,6 @@ class MixPlayer {
 
   setStereoBalance(double pan) {
     for (var item in player) {
-
       item.setStereoBalance(pan);
     }
   }
@@ -156,12 +183,10 @@ class MixPlayer {
 
   updateVolumeMetronome(double volume) {
     for (var item in player) {
-        metronomeVolumeTemp = volume;
-        player.forEach((element) {
-            item.updateVolume(volume);
-
-        });
-
+      metronomeVolumeTemp = volume;
+      player.forEach((element) {
+        item.updateVolume(volume);
+      });
     }
   }
 
@@ -223,8 +248,12 @@ class MixPlayer {
 
   disposePlayer() {
     player.forEach((element) {
-      element.disposePlayer();
+      if(player!=null){
+        element.disposePlayer();
+      }
+
     });
+
   }
 
   PlayerState get playState => player.first.playState;
@@ -244,11 +273,11 @@ class MixPlayer {
     playerAudio.onPlayerStateChangedStream.listen((event) {
       if (event == PlayerState.complete) {
         if (player
-            .where(
-                (element) => element.playState == PlayerState.complete)
-            .toList()
-            .length ==
-            player.length &&
+                    .where(
+                        (element) => element.playState == PlayerState.complete)
+                    .toList()
+                    .length ==
+                player.length &&
             event == PlayerState.complete) {
           playerStateChangedStream.add(PlayerState.ready);
           playbackEventStream.add(
@@ -288,7 +317,7 @@ class MixPlayer {
     });
 
     playerAudio.playbackEventStream.listen((event) {
-      if(event.duration > 0){
+      if (event.duration > 0) {
         playbackEventStream.add(PlaybackEventMessage(
             currentTime: event.currentTime,
             duration: event.duration > 0.0 ? event.duration : this.duration));

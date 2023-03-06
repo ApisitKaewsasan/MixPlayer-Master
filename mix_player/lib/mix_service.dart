@@ -14,11 +14,14 @@ import 'models/mix_item.dart';
 import 'utility/file_manager.dart';
 
 class MixService {
-  static MixService instance = MixService();
 
   final _onDownLoadTaskSubject = BehaviorSubject<DownLoadTask>();
 
   final _onProcuessRenderToBufferSubject = BehaviorSubject<double>();
+
+  final Hz = 48000;
+
+  final pitchRate = [1.06,1.12,1.19,1.26,1.33];
 
   mixAudioFile(
       {required MixItem mixItem,
@@ -36,7 +39,10 @@ class MixService {
     var fileName =
         "${pathCache.isNotEmpty ? pathCache : directory.path}/${mixItem.fileName}.${mixItem.extension.toLowerCase()}";
     if (File(mixItem.request.first).existsSync()) {
-      File(fileName).delete();
+      if(File(fileName).existsSync()){
+        File(fileName).delete();
+      }
+
       if (mixItem.request.length > 0 &&
           p.extension(mixItem.request.first).split(".")[1] ==
               mixItem.extension.toLowerCase()) {
@@ -52,51 +58,37 @@ class MixService {
         String mixPath = "";
         String mixValue = '"';
         String mixPathEnd = "";
-        String pitch = "aresample=44100";
-        String speed = "atempo=1.0";
+        String pitch = "aresample=${Hz}";
+        //String speed = "atempo=1.0";
         int index = 0;
         mixItem.request.forEach((element) {
           String pan = "pan=stereo|c0=c0|c1=c1";
           if (mixItem.panPlayerConfig[index] > 0) {
-            pan =
-            "pan=stereo|c0=${(1.0 - (mixItem.panPlayerConfig[index] /20))}*c0|c1=${mixItem.panPlayerConfig[index] / 100}*c1";
+            // pan =
+            // "pan=stereo|c0=${(1.0 - (mixItem.panPlayerConfig[index] /20))}*c0|c1=${mixItem.panPlayerConfig[index] / 100}*c1";
+            pan = "pan=stereo|c1=c1";
           } else if (mixItem.panPlayerConfig[index] < 0) {
-            pan =
-            "pan=stereo|c0=${(mixItem.panPlayerConfig[index]).abs() /20}*c0|c1=${(1.0 - (mixItem.panPlayerConfig[index]).abs() / 100)}*c1";
+            // pan =
+            // "pan=stereo|c0=${(mixItem.panPlayerConfig[index]).abs() /20}*c0|c1=${(1.0 - (mixItem.panPlayerConfig[index]).abs() / 100)}*c1";
+            pan = "pan=stereo|c0=c0";
           }
-          // if (mixItem.pitchConfig > 0) {
-          //   print("efwer ${mixItem.pitchConfig}");
 
-          // } else if (mixItem.pitchConfig < 0) {
-          //   print("efwer ${mixItem.pitchConfig}");
-          //   pitch =
-          //   "asetrate=${44100 *
-          //       mixItem.pitchConfig.abs()},aresample=44100,atempo=2.0";
-          // }
+        if(mixItem.pitchConfig<0){
 
-          var pitchConfig = getPitch(value: mixItem.pitchConfig);
-          if (mixItem.pitchConfig == 0) {
-            speed = "atempo=${mixItem.speedConfig}";
-            pitch = "asetrate=${pitchConfig['asetrate']},aresample=48000";
-          } else if (mixItem.pitchConfig != 0 && mixItem.speedConfig == 1) {
-            pitch =
-            "asetrate=${pitchConfig['asetrate']},aresample=44100,atempo=${pitchConfig['atempo']}";
-          } else if (mixItem.pitchConfig != 0 && mixItem.speedConfig != 1) {
-            if(mixItem.speedConfig<0){
-              pitch =
-              "asetrate=${pitchConfig['asetrate']},aresample=48000,atempo=${mixItem.speedConfig}";
-            }else{
-              pitch =
-              "asetrate=${pitchConfig['asetrate']},aresample=44100,atempo=${mixItem.speedConfig}";
-            }
-          }
+          final pitchConfig = pitchRate[((mixItem.pitchConfig.abs())-1).toInt()];
+          pitch =  "asetrate=${Hz/pitchConfig},aresample=${Hz},atempo=${1*pitchConfig}";
+
+        }else if(mixItem.pitchConfig>0){
+          final pitchConfig = pitchRate[(mixItem.pitchConfig-1).toInt()];
+          pitch =  "asetrate=${Hz*pitchConfig},aresample=${Hz},atempo=${1/pitchConfig}";
+        }
+
           mixPath += " -i ${element}";
           mixValue +=
-          "[${index}]volume=${mixItem.volumeConfig[index]/50},${pan},${pitch},${speed}[${pathArray[index]}];";
+          "[${index}]volume=${mixItem.volumeConfig[index]/50},${pan},${pitch}[${pathArray[index]}];";
           mixPathEnd += "[${pathArray[index]}]";
           index++;
         });
-
         FFmpegKit.executeAsync(
             '${mixPath} -filter_complex ${mixValue}${mixPathEnd}amix=inputs=${mixItem.request.length}:duration=longest" ${fileName}',
                 (session) async {
@@ -136,76 +128,6 @@ class MixService {
 
   sessionRenderCancel() => FFmpegKit.cancel();
 
-  Map getPitch({double value = 0.0}) {
-    var defaults = {
-      "asetrate": 44100 * 1.0,
-      "atempo": 1.0,
-    };
-    if (value == 0.0) {
-      return defaults;
-    } else if (value >= 6 && value < 7) {
-      return {
-        "asetrate": 44100 * 1.6,
-        "atempo": 0.625,
-      };
-    } else if (value >= 5 && value < 6) {
-      return {
-        "asetrate": 44100 * 1.5,
-        "atempo": 0.67,
-      };
-    } else if (value >= 4 && value < 5) {
-      return {
-        "asetrate": 44100 * 1.4,
-        "atempo": 0.72,
-      };
-    } else if (value >= 3 && value < 4) {
-      return {
-        "asetrate": 44100 * 1.3,
-        "atempo": 0.77,
-      };
-    } else if (value >= 2 && value < 3) {
-      return {
-        "asetrate": 44100 * 1.2,
-        "atempo": 0.83,
-      };
-    } else if (value >= 1 && value < 2) {
-      return {
-        "asetrate": 44100 * 1.1,
-        "atempo": 0.91,
-      };
-    } else if (value >= -1 && value < 0) {
-      return {
-        "asetrate": 44100 * 0.9,
-        "atempo": 1.1,
-      };
-    } else if (value >= -2 && value < -1) {
-      return {
-        "asetrate": 44100 * 0.95,
-        "atempo": 1.1,
-      };
-    } else if (value >= -3 && value < -2) {
-      return {
-        "asetrate": 44100 * 0.8,
-        "atempo": 1.25,
-      };
-    } else if (value >= -4 && value < -3) {
-      return {
-        "asetrate": 44100 * 0.85,
-        "atempo": 1.18,
-      };
-    } else if (value >= -5 && value < -4) {
-      return {
-        "asetrate": 44100 * 0.7,
-        "atempo": 1.43,
-      };
-    } else if (value >= -6 && value < -5) {
-      return {
-        "asetrate": 44100 * 0.75,
-        "atempo": 1.66,
-      };
-    }
-    return defaults;
-  }
 
   downLoadTasks({required List<String> url}) async {
     var tempProcuess = List.generate(url.length, (index) => 0.0);

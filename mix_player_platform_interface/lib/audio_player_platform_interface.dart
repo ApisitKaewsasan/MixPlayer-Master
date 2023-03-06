@@ -138,6 +138,8 @@ abstract class MixAudioPlayerPlatform {
     throw UnimplementedError("downloadTask() has not been implemented.");
   }
 
+
+
   Future<String?> audioExport(List<String> request,String extension,double reverbConfig,double speedConfig,double panConfig,double pitchConfig,
       List<double> frequencyConfig,List<double> gainConfig,List<double> panPlayerConfig,List<double> volumeConfig) {
     throw UnimplementedError("audioExport() has not been implemented.");
@@ -145,7 +147,6 @@ abstract class MixAudioPlayerPlatform {
 
   /// Stream of changes on player state.
   ///
-
 
   Stream<double> get onProcuessRenderToBufferStream {
     throw UnimplementedError(
@@ -161,9 +162,6 @@ abstract class MixAudioPlayerPlatform {
     throw UnimplementedError(
         'onPlayerStateChangedStream has not been implemented.');
   }
-
-
-
 
 
   Stream<String> get onErrorPlayerStream {

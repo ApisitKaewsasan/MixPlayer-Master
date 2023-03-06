@@ -163,6 +163,8 @@ class AudioPlayerService:NSObject{
     }
 
     func toggleMute() {
+        
+            
         if(state != AudioPlayerStates.error){
             if(isMute){
                 volume = player.volume
@@ -198,12 +200,12 @@ class AudioPlayerService:NSObject{
         
         if player.isPlaying {
           displayLink?.isPaused = true
-          disconnectVolumeTap()
+         // disconnectVolumeTap()
             reference.onPlayerStateChanged(playerId: playerId, state: .paused)
           player.pause()
         } else {
           displayLink?.isPaused = false
-          connectVolumeTap()
+          //connectVolumeTap()
             
           if needsFileScheduled {
             scheduleAudioFile()
@@ -274,6 +276,7 @@ class AudioPlayerService:NSObject{
         if(player.isPlaying){
             pause()
         }else{
+          
             resume(at: at)
          }
     }
@@ -286,17 +289,22 @@ class AudioPlayerService:NSObject{
     
     func skipForward(time:Float){
         let currentTime = Double(currentPosition) / audioSampleRate
-        seek(at: currentTime+Double(time))
+        seek(at: Double(time))
         
     }
     
     func skipBackward(time:Float){
         let currentTime = Double(currentPosition) / audioSampleRate
-        seek(at: currentTime-Double(time))
+        seek(at: Double(time))
     }
     
     func updateVolume(volume:Float){
+        let wasPlaying = isMute
         player.volume = (0.01 * volume)
+        
+        if !wasPlaying {
+            player.pause()
+        }
     }
 
     func seek(at time: Double) {
@@ -311,6 +319,7 @@ class AudioPlayerService:NSObject{
 
         let wasPlaying = player.isPlaying
         player.stop()
+        
 
         if currentPosition < audioLengthSamples {
           updateDisplay()
@@ -374,21 +383,24 @@ class AudioPlayerService:NSObject{
             
       if currentPosition >= audioLengthSamples {
          
-        player.stop()
-
-        seekFrame = 0
-        currentPosition = 0
-        displayLink?.isPaused = true
-        seek(at: 0)
-        disconnectVolumeTap()
+      
         
-          
           if(modeLoop){
               print("currentTime \(PlayerTime(elapsedTime: currentTime, remainingTime: audioLengthSeconds).elapsedText)   duration \(duration)")
-              playOrPause()
-              seek(at: 64)
+             // playOrPause()
+              seek(at: 1)
+          }else{
+              player.stop()
+
+              seekFrame = 0
+              currentPosition = 0
+              displayLink?.isPaused = true
+              seek(at: 0)
+            //  disconnectVolumeTap()
+              
+              reference.onPlayerStateChanged(playerId: playerId, state: .ready)
           }
-          reference.onPlayerStateChanged(playerId: playerId, state: .ready)
+         
       }
 
     }
