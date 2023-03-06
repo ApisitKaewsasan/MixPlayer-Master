@@ -1,3 +1,9 @@
+## 0.0.17
+* fix update pubspec dependencies .
+## 0.0.17
+* update pubspec dependencies .
+## 0.0.16
+* fix bug equaliserService error .
 ## 0.0.15
 * fix bug mix audio about pitch and pan left and right.
 ## 0.0.14
@@ -18,3 +24,4 @@
  * improve player when play file and adjust speed than distorted sound
 ## 0.0.1 - 0.0.5
  * install function
+   

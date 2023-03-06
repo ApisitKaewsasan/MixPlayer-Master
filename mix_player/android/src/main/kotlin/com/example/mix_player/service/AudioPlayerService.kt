@@ -43,7 +43,7 @@ class AudioPlayerService(
         this.audioItem = audioItem
 
         setupPlayer()
-        //  equaliserService = EqualizerViewModel(Equalizer(0,audioPlayer.audioSessionId))
+          equaliserService = EqualizerViewModel(Equalizer(0,audioPlayer!!.audioSessionId))
         //  setupEqualizer()
     }
 
